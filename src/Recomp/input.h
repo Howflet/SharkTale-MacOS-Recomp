@@ -26,3 +26,12 @@ void input_key(u8 dik, int down);
 void input_mouse_move(s32 dx, s32 dy);
 void input_mouse_wheel(s32 dz);
 void input_mouse_button(int button, int down);
+
+/* Platform layer entry points for synthetic input (gfx_metal.m): a key as if
+   typed, a mouse button, and relative mouse motion in view points. */
+void host_key(u8 dik, int down);
+void host_mouse_button(int button, int down);
+void host_mouse_motion(double dx, double dy);
+
+/* Game controller (gamepad.m): poll once per event pump; inactive releases all. */
+void gamepad_poll(int active);

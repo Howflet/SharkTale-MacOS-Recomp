@@ -11,5 +11,5 @@ done
 for f in $ROOT/src/Recomp/*.c; do
   /usr/bin/clang -c -O2 -g -Wall -Wno-unused-function -Wno-unused-variable -I$ROOT/src/Recomp -I/opt/homebrew/include -o $OBJ/${f:t:r}.o $f
 done
-/usr/bin/clang -o $ROOT/build/sharktale $OBJ/*.o $ROOT/build/recomp/obj/*/*.o(N) -lm -framework Metal -framework QuartzCore -framework AppKit -framework ImageIO -framework UniformTypeIdentifiers -framework OpenAL
+/usr/bin/clang -o $ROOT/build/sharktale $OBJ/*.o $ROOT/build/recomp/obj/*/*.o(N) -lm -framework Metal -framework QuartzCore -framework AppKit -framework ImageIO -framework UniformTypeIdentifiers -framework OpenAL -framework GameController
 echo "linked $ROOT/build/sharktale ($(du -h $ROOT/build/sharktale | cut -f1))"

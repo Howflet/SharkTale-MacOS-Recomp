@@ -216,7 +216,9 @@ static void key_event(uint8_t dik, int down, int repeat)
    menus follow (WM_MOUSEMOVE) comes from a virtual cursor moved by the relative
    motion, in game pixels. Uncaptured, it is the real position in the view. */
 
-static void mouse_position(NSEvent* e)
+/* Relative motion (dx, dy in view points); `at` is the cursor's position in
+   the view, needed only while uncaptured. */
+static void mouse_motion(double dx, double dy, NSPoint at)
 {
 	NSSize sz = G.view.bounds.size;
 	double sx = G.width / (sz.width > 0 ? sz.width : 1), sy = G.height / (sz.height > 0 ? sz.height : 1);
@@ -228,16 +230,15 @@ static void mouse_position(NSEvent* e)
 			VirtualX = g_cursor_x;
 			VirtualY = g_cursor_y;
 		}
-		VirtualX += [e deltaX] * sx;
-		VirtualY += [e deltaY] * sy;
+		VirtualX += dx * sx;
+		VirtualY += dy * sy;
 		x = VirtualX;
 		y = VirtualY;
 	}
 	else
 	{
-		NSPoint p = [G.view convertPoint:[e locationInWindow] fromView:nil];
-		x = p.x * sx;
-		y = (sz.height - p.y) * sy;
+		x = at.x * sx;
+		y = (sz.height - at.y) * sy;
 	}
 	if (x < 0) x = 0;
 	if (y < 0) y = 0;
@@ -252,14 +253,19 @@ static void mouse_position(NSEvent* e)
 	g_cursor_y = (int)y;
 	/* DirectInput gets the raw motion; keep the fractional part between events. */
 	static double fx, fy;
-	fx += [e deltaX];
-	fy += [e deltaY];
-	s32 dx = (s32)fx, dy = (s32)fy;
-	fx -= dx;
-	fy -= dy;
-	if (dx || dy)
-		input_mouse_move(dx, dy);
+	fx += dx;
+	fy += dy;
+	s32 idx = (s32)fx, idy = (s32)fy;
+	fx -= idx;
+	fy -= idy;
+	if (idx || idy)
+		input_mouse_move(idx, idy);
 	hle_post_message(0, 0x0200 /* WM_MOUSEMOVE */, 0, (u32)(g_cursor_x & 0xffff) | ((u32)g_cursor_y << 16));
+}
+
+static void mouse_position(NSEvent* e)
+{
+	mouse_motion([e deltaX], [e deltaY], [G.view convertPoint:[e locationInWindow] fromView:nil]);
 }
 
 static void mouse_button(NSEvent* e, int button, int down)
@@ -270,6 +276,22 @@ static void mouse_button(NSEvent* e, int button, int down)
 	input_mouse_button(button, down);
 	g_key_state[vks[button]] = down ? 0x80 : 0;
 	hle_post_message(0, msgs[button][down], 0, (u32)(g_cursor_x & 0xffff) | ((u32)g_cursor_y << 16));
+}
+
+/* Synthetic input for the game controller (gamepad.m). Using the pad
+   captures the mouse, as a click in the game does. */
+void host_key(u8 dik, int down) { key_event(dik, down, 0); }
+void host_mouse_button(int button, int down)
+{
+	if (down && !Captured)
+		set_capture(1);
+	mouse_button(nil, button, down);
+}
+void host_mouse_motion(double dx, double dy)
+{
+	if (!Captured)
+		set_capture(1);
+	mouse_motion(dx, dy, NSZeroPoint);
 }
 
 void gfx_pump_events(void)
@@ -375,6 +397,7 @@ void gfx_pump_events(void)
 			if (forward)
 				[NSApp sendEvent:e];
 		}
+		gamepad_poll([G.window isKeyWindow]);
 	}
 }
 

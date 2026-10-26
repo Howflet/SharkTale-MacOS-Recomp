@@ -26,7 +26,7 @@ The result is about 49,000 functions of generated C, compiled with clang at `-O2
 | Windows piece | Replaced by |
 |---|---|
 | Direct3D 8 (fixed function) | `hle_d3d8_device.c` + `gfx_metal.m`: all 97 device methods on **Metal**, with the fixed-function pipeline as one uber-shader (`gfx_shaders.metal`) |
-| DirectInput 8, windows and messages | AppKit events → DirectInput and Win32 messages; a small window manager (`hle_user32.c`, `hle_dinput8.c`) |
+| DirectInput 8, windows and messages | AppKit events → DirectInput and Win32 messages; a small window manager (`hle_user32.c`, `hle_dinput8.c`); game controllers through **GameController.framework** (`gamepad.m`) |
 | OpenAL (Windows) | bridged to macOS **OpenAL.framework** (`hle_openal.c`) |
 | Bink (RAD) | a native Bink **audio** decoder (`bink.c`; all sound effects are Bink audio) and Bink **video** through FFmpeg's libavcodec, loaded at run time (`bink_video.c`) |
 | kernel32 / msvcrt / others | files, memory, threads, time and the C runtime, written natively (`hle_*.c`) |
@@ -140,6 +140,20 @@ open "Shark Tale.app"
   - The game captures the mouse while it has focus. **Cmd-Tab** releases it.
   - In a **window**, the mouse is free so you can move and resize the window. **Click** in the game to capture it; press **⌘** to release it.
 - **Keys:** the game's normal Windows controls. **Cmd-Q** quits.
+- **Controller:** any controller macOS supports (Xbox, DualSense/DualShock, Switch Pro, MFi). Connect it in System Settings → Bluetooth (or by USB); it works as soon as it is on, even mid-game. It drives the game's keyboard and mouse controls, so it works in menus too:
+
+  | Control | Does |
+  |---|---|
+  | Left stick | swim and strafe (W A S D) |
+  | Right stick | camera; moves the cursor in menus |
+  | A / Cross | swim forward; click in menus |
+  | B / Circle | attack (Use / Fire) |
+  | X / Square | launch urchin; skip movies |
+  | Y / Triangle | use |
+  | RT / LT | swim forward / back |
+  | D-pad | arrow keys |
+  | Menu (Start) | main menu |
+  | Options (Back) | skip cutscene |
 - **Saves and settings** are kept in `~/Library/Application Support/Shark Tale/`, never inside the app.
 - **Log:** `~/Library/Logs/SharkTaleNative.log`.
 
@@ -168,6 +182,7 @@ These are environment variables; details are in `SHARKTALE_NOTES.md`.
 | `SHARK_SELFTEST=1` | Check recompiled maths kernels against C references |
 | `SHARK_FPS=1` | Print the frame rate |
 | `SHARK_MAXFPS=<n>` | Frame rate cap (default 60; `0` removes it) |
+| `SHARK_PAD_SPEED=<n>` | Controller right-stick speed at full tilt, in points per second (default 1200) |
 | `SHARK_USER_DIR=<dir>` | Where player data goes |
 
 Other tools:

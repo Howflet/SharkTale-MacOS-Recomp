@@ -683,3 +683,15 @@ The bundle contains Activision's game data and GPL FFmpeg builds. It is for pers
 - A fresh project in a scratch directory, followed by `GHIDRA_PROJECT=… tools/recomp_build_all.sh`, produced generated C **byte-identical** to the known-good build: all 247 `.c` files and `recomp_modules.h`.
 - The self-test passes, and the movies, main menu and a clean exit all work.
 - The "unresolved indirect jumps" counts in EmitC's log summary differ slightly between runs, but the emitted code does not.
+
+## 16. Game controllers (2026-10-26)
+
+`src/Recomp/gamepad.m` reads the current extended gamepad (GameController.framework) once per event pump and turns it into the game's own **keyboard and mouse** input, not a DirectInput joystick:
+- WinDrv does support a DirectInput joystick (`EnumDevices(DI8DEVCLASS_GAMECTRL)`, `c_dfDIJoystick2`, buttons → `IK_Joy1..12`, POV → `IK_JoyPov*`, axes → `IK_JoyX/Y/Z/R/U/V/Slider*`), but the default `Joy*` bindings in `DefUser.ini` expect an old pad: swimming is a button and both sticks turn and look. Changing them would mean editing each player's `User.ini`.
+- The menus are mouse-driven, so a joystick alone could not use them.
+
+Mapping: left stick → W A S D (press past 0.5, release below 0.35); right stick → relative mouse motion (dead zone 0.15, squared response, `SHARK_PAD_SPEED` points/s at full tilt, default 1200), which also moves the menus' virtual cursor; A/B → left/right mouse button; X → Space; Y → F; RT/LT → Shift/Ctrl; d-pad → arrows; Menu → Escape; Options → Backspace.
+
+`gfx_metal.m` exposes `host_key`, `host_mouse_button` and `host_mouse_motion` for it (the old `mouse_position` is split into `mouse_motion`). Using the pad captures the mouse, like a click in the game. When the window is not key every held control is released. Connects and disconnects are logged as `[pad]`.
+
+[C] Builds without warnings; a windowed run to the menu and a clean quit work as before. [U] Not yet tried with a physical controller (none was switched on).
