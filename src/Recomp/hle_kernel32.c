@@ -88,6 +88,9 @@ static void host_root(char* out, size_t cap)
 		*slash = 0;
 }
 
+/* Writable overlay root (host path, no trailing slash); empty = write in place. */
+char g_user_root[1024];
+
 void hle_host_path(const char* guest, char* out, size_t cap)
 {
 	char full[2048];
@@ -117,6 +120,43 @@ void hle_host_path(const char* guest, char* out, size_t cap)
 	for (char* p = out; *p; p++)
 		if (*p == '\\')
 			*p = '/';
+	/* Writable overlay (app bundle): the player's copy wins; saves always live there. */
+	if (g_user_root[0] && !strncmp(out, root, strlen(root)))
+	{
+		const char* rel = out + strlen(root);
+		char user[2048];
+		snprintf(user, sizeof user, "%s%s", g_user_root, rel);
+		if (!strncasecmp(rel, "/System/Save", 12) || !access(user, F_OK))
+			snprintf(out, cap, "%s", user);
+	}
+}
+
+/* For writes: a path inside the (read-only) game files moves to the overlay,
+   copying the original first unless it is about to be replaced. */
+static void mkdir_p(const char* path);
+static int copy_file(const char* a, const char* b, int fail_if_exists);
+static void writable(char* host, size_t cap, int keep_contents)
+{
+	if (!g_user_root[0])
+		return;
+	char root[1024];
+	host_root(root, sizeof root);
+	size_t rl = strlen(root);
+	if (strncmp(host, root, rl))
+		return;
+	char user[2048];
+	snprintf(user, sizeof user, "%s%s", g_user_root, host + rl);
+	char dir[2048];
+	snprintf(dir, sizeof dir, "%s", user);
+	char* slash = strrchr(dir, '/');
+	if (slash)
+	{
+		*slash = 0;
+		mkdir_p(dir);
+	}
+	if (keep_contents && access(user, F_OK) && !access(host, F_OK))
+		copy_file(host, user, 0);
+	snprintf(host, cap, "%s", user);
 }
 
 void hle_host_wpath(u32 gw, char* out, size_t cap)
@@ -134,8 +174,12 @@ static void guest_path_a(Ctx* c, u32 p, char* out, size_t cap) { hle_host_path(g
 
 typedef struct HFile { int fd; } HFile;
 
-static u32 create_file(Ctx* c, const char* host, u32 access, u32 disposition)
+static u32 create_file(Ctx* c, const char* host_in, u32 access, u32 disposition)
 {
+	char host[2048];
+	snprintf(host, sizeof host, "%s", host_in);
+	if ((access & 0x40000000u) || disposition == 1 || disposition == 2)  /* GENERIC_WRITE or creating */
+		writable(host, sizeof host, disposition != 2 && disposition != 5);
 	int flags = 0;
 	int write = (access & 0x40000000u) != 0, read = (access & 0x80000000u) != 0 || !write;
 	flags = (read && write) ? O_RDWR : write ? O_WRONLY : O_RDONLY;
@@ -288,17 +332,20 @@ static void mkdir_p(const char* path)
 	mkdir(tmp, 0755);
 }
 
-HLE(CreateDirectoryW) { char h[2048]; hle_host_wpath(ARG(0), h, sizeof h); mkdir_p(h); HLE_RET(c, 1, 8); }
-HLE(CreateDirectoryA) { char h[2048]; guest_path_a(c, ARG(0), h, sizeof h); mkdir_p(h); HLE_RET(c, 1, 8); }
+HLE(CreateDirectoryW) { char h[2048]; hle_host_wpath(ARG(0), h, sizeof h); writable(h, sizeof h, 0); mkdir_p(h); HLE_RET(c, 1, 8); }
+HLE(CreateDirectoryA) { char h[2048]; guest_path_a(c, ARG(0), h, sizeof h); writable(h, sizeof h, 0); mkdir_p(h); HLE_RET(c, 1, 8); }
 HLE(RemoveDirectoryW) { char h[2048]; hle_host_wpath(ARG(0), h, sizeof h); HLE_RET(c, rmdir(h) == 0, 4); }
 HLE(RemoveDirectoryA) { char h[2048]; guest_path_a(c, ARG(0), h, sizeof h); HLE_RET(c, rmdir(h) == 0, 4); }
-HLE(DeleteFileW) { char h[2048]; hle_host_wpath(ARG(0), h, sizeof h); HLE_RET(c, unlink(h) == 0, 4); }
-HLE(DeleteFileA) { char h[2048]; guest_path_a(c, ARG(0), h, sizeof h); HLE_RET(c, unlink(h) == 0, 4); }
+/* With the overlay, game files themselves are never deleted (only the player's copies). */
+HLE(DeleteFileW) { char h[2048]; hle_host_wpath(ARG(0), h, sizeof h); writable(h, sizeof h, 0); HLE_RET(c, unlink(h) == 0, 4); }
+HLE(DeleteFileA) { char h[2048]; guest_path_a(c, ARG(0), h, sizeof h); writable(h, sizeof h, 0); HLE_RET(c, unlink(h) == 0, 4); }
 HLE(MoveFileW)
 {
 	char a[2048], b[2048];
 	hle_host_wpath(ARG(0), a, sizeof a);
 	hle_host_wpath(ARG(1), b, sizeof b);
+	writable(a, sizeof a, 1);
+	writable(b, sizeof b, 0);
 	HLE_RET(c, rename(a, b) == 0, 8);
 }
 HLE(MoveFileA)
@@ -306,6 +353,8 @@ HLE(MoveFileA)
 	char a[2048], b[2048];
 	guest_path_a(c, ARG(0), a, sizeof a);
 	guest_path_a(c, ARG(1), b, sizeof b);
+	writable(a, sizeof a, 1);
+	writable(b, sizeof b, 0);
 	HLE_RET(c, rename(a, b) == 0, 8);
 }
 
@@ -335,6 +384,7 @@ HLE(CopyFileW)
 	char a[2048], b[2048];
 	hle_host_wpath(ARG(0), a, sizeof a);
 	hle_host_wpath(ARG(1), b, sizeof b);
+	writable(b, sizeof b, 0);
 	HLE_RET(c, copy_file(a, b, ARG(2)), 12);
 }
 HLE(CopyFileA)
@@ -342,6 +392,7 @@ HLE(CopyFileA)
 	char a[2048], b[2048];
 	guest_path_a(c, ARG(0), a, sizeof a);
 	guest_path_a(c, ARG(1), b, sizeof b);
+	writable(b, sizeof b, 0);
 	HLE_RET(c, copy_file(a, b, ARG(2)), 12);
 }
 

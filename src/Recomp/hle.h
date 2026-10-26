@@ -35,7 +35,10 @@ void x87_push(Ctx* c, f80 v);
    guest current directory (initially the game's System directory). */
 void hle_host_path(const char* guest, char* out, size_t cap);
 void hle_host_wpath(u32 gwpath, char* out, size_t cap);
-extern char g_guest_cwd[1024];  /* Windows-style, e.g. C:\Shark Tale\System */
+extern char g_guest_cwd[1024];
+/* Running from an app bundle, writes (saves, .ini, logs) go to this overlay
+   root (~/Library/Application Support/Shark Tale) and reads prefer it. */
+extern char g_user_root[1024];  /* Windows-style, e.g. C:\Shark Tale\System */
 
 /* Win32 error code for GetLastError. */
 void hle_set_last_error(u32 e);

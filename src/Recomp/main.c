@@ -19,13 +19,11 @@
 
 const char* g_command_line;
 
-/* Without --game-dir: ./game/System, else next to the executable
-   (<app>/Contents/Resources/game/System in the app bundle, or ../game/System). */
+/* Without --game-dir: the app bundle's Contents/Resources/game/System, else
+   ./game/System, else ../game/System next to the executable. */
 static const char* default_game_dir(void)
 {
 	struct stat st;
-	if (!stat("game/System/Game.ini", &st))
-		return "game/System";
 	static char path[PATH_MAX];
 	char exe[PATH_MAX], real[PATH_MAX];
 	uint32_t n = sizeof exe;
@@ -34,15 +32,21 @@ static const char* default_game_dir(void)
 	char* slash = strrchr(real, '/');
 	if (slash)
 		*slash = 0;
-	const char* candidates[] = { "../Resources/game/System", "../game/System", "game/System" };
-	for (int i = 0; i < 3; i++)
+	/* An app bundle always uses its own copy; otherwise ./game/System, then next to the binary. */
+	snprintf(path, sizeof path, "%s/../Resources/game/System", real);
+	char probe[PATH_MAX + 16];
+	snprintf(probe, sizeof probe, "%s/Game.ini", path);
+	if (strstr(real, ".app/Contents/MacOS") && !stat(probe, &st))
 	{
-		snprintf(path, sizeof path, "%s/%s", real, candidates[i]);
-		char probe[PATH_MAX + 16];
-		snprintf(probe, sizeof probe, "%s/Game.ini", path);
-		if (!stat(probe, &st))
-			return path;
+		static char canon[PATH_MAX];
+		return realpath(path, canon) ? canon : path;
 	}
+	if (!stat("game/System/Game.ini", &st))
+		return "game/System";
+	snprintf(path, sizeof path, "%s/../game/System", real);
+	snprintf(probe, sizeof probe, "%s/Game.ini", path);
+	if (!stat(probe, &st))
+		return path;
 	return "game/System";
 }
 
@@ -57,6 +61,17 @@ int main(int argc, char** argv)
 	}
 	setvbuf(stderr, NULL, _IONBF, 0);
 	g_game_dir = default_game_dir();
+	/* Inside an app bundle the game files are read-only: player data goes to Application Support. */
+	{
+		extern char g_user_root[1024];
+		const char* env = getenv("SHARK_USER_DIR");
+		if (env && *env)
+			snprintf(g_user_root, sizeof g_user_root, "%s", env);
+		else if (strstr(g_game_dir, ".app/Contents/Resources/") && getenv("HOME"))
+			snprintf(g_user_root, sizeof g_user_root, "%s/Library/Application Support/Shark Tale", getenv("HOME"));
+		if (g_user_root[0])
+			fprintf(stderr, "[main] player data in %s\n", g_user_root);
+	}
 	static char cmd[4096] = "\"C:\\Shark Tale\\System\\Game.exe\"";
 	for (int i = 1; i < argc; i++)
 	{

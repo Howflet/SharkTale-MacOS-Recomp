@@ -640,3 +640,28 @@ Causes and fixes:
 - Over the game area the system cursor is invisible (a blank cursor rect), because the game draws its own in menus. It stays normal on the title bar and resize edges.
 - Each capture restarts the virtual cursor from the current position.
 - [U] Window behaviour is not testable headless; awaiting the user's check.
+
+## 14. Self-contained app (2026-10-26)
+
+`tools/make_app.sh` now builds a **self-contained `Shark Tale.app`** (887 MB) that needs neither CrossOver nor Homebrew:
+- `Contents/Resources/game` is a full copy of the game data. Links into the CrossOver baseline bottle are resolved, and player data is left out.
+- `Contents/Frameworks` holds 14 libraries: libavcodec, libavutil and their whole Homebrew dependency closure (x264/x265/vpx/dav1d/opus/lame/mpg123/ssl/crypto/lzma/swresample/SvtAv1). They are relinked to `@loader_path`, ad-hoc signed, and reached through the unversioned `libavcodec.dylib`/`libavutil.dylib` symlinks. `bink_video.c` tries `@executable_path/../Frameworks` first and logs which copy it used.
+- The executable links only system libraries.
+
+**Player data** lives in `~/Library/Application Support/Shark Tale/`. This is a writable overlay over the read-only game files (`g_user_root`, set when running from a bundle; override with `SHARK_USER_DIR`):
+- **Reads** prefer the overlay copy when one exists; `System/Save` always maps there.
+- **Writes** (CreateFile for writing, CreateDirectory, Delete, Move, Copy) go to the overlay, copying the bundled original first unless the file is being truncated.
+- The first `make_app.sh` seeds it with the project's `Save/` and `User.ini`.
+- The bundle is never modified, so its signature stays valid and saves survive rebuilds.
+
+When running from a bundle, the executable always uses its own `Contents/Resources/game/System` (canonicalised), even if launched from a directory that contains `game/`.
+
+**Verified [C]:** launched from the project root (the worst case), headless and muted, with every file open traced:
+- Every open was inside the bundle or the overlay; nothing touched the project's `game/` or the CrossOver bottle.
+- Writes landed in the overlay.
+- No bundle file changed, and `codesign --verify --deep` passes.
+- FFmpeg loaded from the bundle; movies, menu and a clean exit all worked.
+
+[U] Not tried: deleting the CrossOver bottle or Homebrew's FFmpeg for real. The trace shows neither is used.
+
+The bundle contains Activision's game data and GPL FFmpeg builds. It is for personal use only; don't distribute it.

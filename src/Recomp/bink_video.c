@@ -40,16 +40,23 @@ static int load(void)
 	if (F.tried)
 		return F.ok;
 	F.tried = 1;
-	static const char* codec_paths[] = { "libavcodec.dylib", "/opt/homebrew/lib/libavcodec.dylib",
-		"/usr/local/lib/libavcodec.dylib", NULL };
-	static const char* util_paths[] = { "libavutil.dylib", "/opt/homebrew/lib/libavutil.dylib",
-		"/usr/local/lib/libavutil.dylib", NULL };
+	/* The app bundle's own copy first (Contents/Frameworks), then a system FFmpeg. */
+	static const char* codec_paths[] = { "@executable_path/../Frameworks/libavcodec.dylib", "libavcodec.dylib",
+		"/opt/homebrew/lib/libavcodec.dylib", "/usr/local/lib/libavcodec.dylib", NULL };
+	static const char* util_paths[] = { "@executable_path/../Frameworks/libavutil.dylib", "libavutil.dylib",
+		"/opt/homebrew/lib/libavutil.dylib", "/usr/local/lib/libavutil.dylib", NULL };
 	void* codec = NULL;
 	void* util = NULL;
 	for (int i = 0; !codec && codec_paths[i]; i++)
 		codec = dlopen(codec_paths[i], RTLD_NOW);
 	for (int i = 0; !util && util_paths[i]; i++)
 		util = dlopen(util_paths[i], RTLD_NOW);
+	if (codec && util)
+	{
+		Dl_info info;
+		if (dladdr(dlsym(codec, "avcodec_find_decoder"), &info))
+			fprintf(stderr, "[bink] using %s\n", info.dli_fname);
+	}
 	if (!codec || !util)
 	{
 		fprintf(stderr, "[bink] FFmpeg (libavcodec) not found: movies will be skipped\n");
