@@ -9,12 +9,14 @@
 	  SHARK_HEADLESS=1          no window (offscreen rendering only)
 	  SHARK_DUMP=<dir>          write presented frames as PNGs to <dir>
 	  SHARK_DUMP_EVERY=<n>      ... every n-th frame (default 60)
+	  SHARK_MAXFPS=<n>          frame rate cap (default 60, 0 = uncapped)
 =============================================================================*/
 #import <AppKit/AppKit.h>
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
 #import <ImageIO/ImageIO.h>
 #import <UniformTypeIdentifiers/UniformTypeIdentifiers.h>
+#include <mach/mach_time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -787,6 +789,35 @@ void gfx_backbuffer_write(const void* src, int pitch)
 
 void gfx_dump_next_frame(const char* path) { snprintf(G.dump_path, sizeof G.dump_path, "%s", path); }
 
+/* Sleeps until the next frame slot so the game runs no faster than
+   SHARK_MAXFPS (default 60). Deadlines are absolute, so frames do not drift;
+   after a long stall the schedule restarts instead of racing to catch up. */
+static void limit_frame_rate(void)
+{
+	static int init;
+	static uint64_t period, next;
+	if (!init)
+	{
+		init = 1;
+		const char* env = getenv("SHARK_MAXFPS");
+		double fps = env ? atof(env) : 60.0;
+		if (fps > 0)
+		{
+			mach_timebase_info_data_t tb;
+			mach_timebase_info(&tb);
+			period = (uint64_t)(1e9 / fps * tb.denom / tb.numer);
+		}
+	}
+	if (!period)
+		return;
+	uint64_t now = mach_absolute_time();
+	if (!next || now > next + period)
+		next = now;
+	else if (now < next)
+		mach_wait_until(next);
+	next += period;
+}
+
 void gfx_present(void)
 {
 	if (!G.ok)
@@ -827,6 +858,7 @@ void gfx_present(void)
 		G.cmd = nil;
 		G.frame++;
 		G.draws = 0;
+		limit_frame_rate();
 		/* Drawable resizing follows the view (Retina backing). */
 		if (G.layer)
 		{

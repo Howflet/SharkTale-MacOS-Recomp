@@ -167,6 +167,7 @@ These are environment variables; details are in `SHARKTALE_NOTES.md`.
 | `SHARK_TRACE_EH=1` | Log C++ exceptions |
 | `SHARK_SELFTEST=1` | Check recompiled maths kernels against C references |
 | `SHARK_FPS=1` | Print the frame rate |
+| `SHARK_MAXFPS=<n>` | Frame rate cap (default 60; `0` removes it) |
 | `SHARK_USER_DIR=<dir>` | Where player data goes |
 
 Other tools:

@@ -1,10 +1,10 @@
 #!/bin/zsh
-# Gameplay benchmark: scripted New Game -> LowerCity, headless and muted.
+# Gameplay benchmark: scripted New Game -> LowerCity, headless, muted and uncapped.
 # Prints the mean engine frame rate over the last 60 s of a 220 s run.
 #   tools/bench.sh [extra env assignments...]
 ROOT=${0:A:h:h}
 LOG=$ROOT/build/bench.log
-env "$@" SHARK_FPS=1 SHARK_MUTE=1 SHARK_HEADLESS=1 \
+env SHARK_MAXFPS=0 "$@" SHARK_FPS=1 SHARK_MUTE=1 SHARK_HEADLESS=1 \
   SHARK_SCRIPT="30000:k28,32990:m135/175,33000:c135/175,35990:m320/345,36000:c320/345" \
   perl -e 'alarm 220; exec { $ARGV[0] } @ARGV' "$ROOT/build/sharktale" > $LOG 2>&1
 grep -E 'FATAL|recomp\]' $LOG | head -3

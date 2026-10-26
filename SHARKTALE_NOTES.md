@@ -595,6 +595,9 @@ The profile (`sample`, 10 s in gameplay):
 ### Not done
 Promoting x86 registers and flags to C locals across call sites (the translator still spills every register to `Ctx::r` around calls). That is the next big lever if more speed is ever needed; it is not needed for 60 fps.
 
+### Frame rate cap (2026-10-26)
+Uncapped, the game burns a full core rendering 140–290 fps, and vsync only caps it at the display's refresh rate (120 Hz on ProMotion). `gfx_present` now ends with `limit_frame_rate()`, which sleeps (`mach_wait_until`) to an absolute 1/60 s deadline. `SHARK_MAXFPS=<n>` changes the cap and `0` removes it. `SHARK_SCRIPT` counts frames, so scripts timed for an uncapped run fire much later when capped; `tools/bench.sh` sets `SHARK_MAXFPS=0`.
+
 ## 13. Playable app (2026-10-25)
 
 **`Shark Tale Native.app`** (project root; rebuild with `tools/make_app.sh` after `tools/recomp_link.sh`):
