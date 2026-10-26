@@ -1,0 +1,114 @@
+instructions 108834
+BRANCHIND 369 (resolved 362)
+
+op BOOL_AND         144
+op BOOL_NEGATE      7897
+op BOOL_OR          927
+op BOOL_XOR         49
+op BRANCH           3094
+op BRANCHIND        369
+op CALL             2610
+op CALLIND          2778
+op CALLOTHER        2988
+op CBRANCH          7912
+op COPY             153894
+op FLOAT2FLOAT      6213
+op FLOAT_ABS        4
+op FLOAT_ADD        1984
+op FLOAT_DIV        101
+op FLOAT_EQUAL      182
+op FLOAT_LESS       182
+op FLOAT_MULT       3224
+op FLOAT_NAN        364
+op FLOAT_NEG        54
+op FLOAT_NOTEQUAL   12
+op FLOAT_SQRT       16
+op FLOAT_SUB        734
+op INT2FLOAT        822
+op INT_2COMP        67
+op INT_ADD          58690
+op INT_AND          47971
+op INT_CARRY        3180
+op INT_DIV          32
+op INT_EQUAL        44533
+op INT_LEFT         1907
+op INT_LESS         5747
+op INT_MULT         14907
+op INT_NEGATE       45
+op INT_NOTEQUAL     3306
+op INT_OR           6907
+op INT_REM          32
+op INT_RIGHT        946
+op INT_SBORROW      6570
+op INT_SCARRY       4426
+op INT_SDIV         43
+op INT_SEXT         2685
+op INT_SLESS        19534
+op INT_SLESSEQUAL   56
+op INT_SREM         43
+op INT_SRIGHT       575
+op INT_SUB          28662
+op INT_XOR          2415
+op INT_ZEXT         8848
+op LOAD             42949
+op POPCOUNT         17840
+op RETURN           1587
+op ROUND            107
+op STORE            33446
+op SUBPIECE         2152
+op TRUNC            107
+userop FastExitMediaState <- FEMMS              120
+userop FloatingReciprocalAprox <- PFRCP         24
+userop PackedFloatingADD <- PFADD               705
+userop PackedFloatingAccumulate <- PFACC        100
+userop PackedFloatingCompareEQ <- PFCMPEQ       3
+userop PackedFloatingCompareGE <- PFCMPGE       20
+userop PackedFloatingCompareGT <- PFCMPGT       11
+userop PackedFloatingMAX <- PFMAX               1
+userop PackedFloatingMIN <- PFMIN               1
+userop PackedFloatingMUL <- PFMUL               1258
+userop PackedFloatingNegAccumulate <- PFNACC    7
+userop PackedFloatingPosNegAccumulate <- PFPNACC 9
+userop PackedFloatingReciprocalIter1 <- PFRCPIT1 22
+userop PackedFloatingReciprocalIter2 <- PFRCPIT2 42
+userop PackedFloatingReciprocalSQRAprox <- PFRSQRT 20
+userop PackedFloatingReciprocalSQRIter1 <- PFRSQIT1 20
+userop PackedFloatingSUB <- PFSUB               141
+userop PackedFloatingSUBR <- PFSUBR             27
+userop PackedFloatingToIntDwordConv <- PF2ID    2
+userop PackedIntToFloatingDwordConv <- PI2FD    8
+userop PackedSwapDWords <- PSWAPD               19
+userop cpuid <- CPUID                           11
+userop cpuid_Architectural_Performance_Monitoring_info <- CPUID 11
+userop cpuid_Deterministic_Cache_Parameters_info <- CPUID 11
+userop cpuid_Direct_Cache_Access_info <- CPUID  11
+userop cpuid_Extended_Feature_Enumeration_info <- CPUID 11
+userop cpuid_Extended_Topology_info <- CPUID    11
+userop cpuid_MONITOR_MWAIT_Features_info <- CPUID 11
+userop cpuid_Processor_Extended_States_info <- CPUID 11
+userop cpuid_Quality_of_Service_info <- CPUID   11
+userop cpuid_Thermal_Power_Management_info <- CPUID 11
+userop cpuid_Version_info <- CPUID              11
+userop cpuid_basic_info <- CPUID                11
+userop cpuid_brand_part1_info <- CPUID          11
+userop cpuid_brand_part2_info <- CPUID          11
+userop cpuid_brand_part3_info <- CPUID          11
+userop cpuid_cache_tlb_info <- CPUID            11
+userop cpuid_serial_info <- CPUID               11
+userop fcos <- FCOS                             1
+userop fcos <- FSINCOS                          11
+userop ffree <- FFREE                           13
+userop fpatan <- FPATAN                         1
+userop fsin <- FSIN                             4
+userop fsin <- FSINCOS                          11
+userop packssdw <- PACKSSDW                     34
+userop packsswb <- PACKSSWB                     2
+userop pmaddwd <- PMADDWD                       93
+userop psllw <- PSLLW                           3
+userop psraw <- PSRAW                           2
+userop psubsw <- PSUBSW                         6
+userop rcpps <- RCPPS                           5
+userop rcpss <- RCPSS                           4
+userop rdtsc <- RDTSC                           38
+userop rsqrtss <- RSQRTSS                       12
+userop swi <- INT3                              1

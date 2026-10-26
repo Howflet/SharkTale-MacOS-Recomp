@@ -1,0 +1,7 @@
+dll	hint	name
+KERNEL32.DLL	0	LoadLibraryA
+KERNEL32.DLL	0	GetProcAddress
+AVIFIL32.dll	0	AVIFileInit
+GDI32.dll	0	BitBlt
+USER32.dll	0	GetDC
+WINMM.dll	0	timeGetTime

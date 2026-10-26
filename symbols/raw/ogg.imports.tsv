@@ -1,0 +1,12 @@
+dll	hint	name
+MSVCR70.dll	759	realloc
+MSVCR70.dll	744	memmove
+MSVCR70.dll	741	memchr
+MSVCR70.dll	322	_initterm
+MSVCR70.dll	686	free
+MSVCR70.dll	110	__dllonexit
+MSVCR70.dll	443	_onexit
+MSVCR70.dll	245	_except_handler3
+MSVCR70.dll	190	_adjust_fdiv
+MSVCR70.dll	737	malloc
+KERNEL32.dll	128	DisableThreadLibraryCalls

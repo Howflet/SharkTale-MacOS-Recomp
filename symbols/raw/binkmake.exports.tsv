@@ -1,0 +1,11 @@
+ordinal	rva	name
+1	0x00001470	_BinkMake@52
+2	0x00003b40	_BinkMakeClose@8
+3	0x00003ad0	_BinkMakeFlush@4
+4	0x00003a50	_BinkMakePutVideo@20
+5	0x00001410	BinkMakeSetMaxCPUs
+6	0x00003dd0	_BinkMix@36
+7	0x00005bf0	_RADSetMemory@8
+8	0x0001e000	_RADTimerRead@0
+9	0x00005c80	_radfree@4
+10	0x00005c10	_radmalloc@4

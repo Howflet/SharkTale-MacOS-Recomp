@@ -1,0 +1,47 @@
+0x000  0x1010448a  public: virtual unsigned long __stdcall UObject::QueryInterface(class FGuid const &, void **)
+0x004  0x101034e0  public: virtual unsigned long __stdcall UObject::AddRef(void)
+0x008  0x10103d46  public: virtual unsigned long __stdcall UObject::Release(void)
+0x00c  0x101026e4  ?
+0x010  0x10103ac6  public: virtual void __thiscall UObject::ProcessEvent(class UFunction *, void *, void *)
+0x014  0x10102b35  public: virtual void __thiscall UObject::ProcessDelegate(class FName, struct FScriptDelegate *, void *, void *)
+0x018  0x101036de  public: virtual void __thiscall UObject::ProcessState(float)
+0x01c  0x10102270  public: virtual int __thiscall UObject::ProcessRemoteFunction(class UFunction *, void *, struct FFrame *)
+0x020  0x101044f3  public: virtual void __thiscall UObject::Modify(void)
+0x024  0x101037ab  public: virtual void __thiscall UField::PostLoad(void)
+0x028  0x10102b4e  public: virtual void __thiscall UObject::Destroy(void)
+0x02c  0x10101311  public: virtual void __thiscall UProperty::Serialize(class FArchive &)
+0x030  0x10102f22  public: virtual int __thiscall UObject::IsPendingKill(void)
+0x034  0x10103896  public: virtual enum EGotoState __thiscall UObject::GotoState(class FName)
+0x038  0x10102eb9  public: virtual int __thiscall UObject::GotoLabel(class FName)
+0x03c  0x10102edc  public: virtual void __thiscall UObject::InitExecution(void)
+0x040  0x1010263a  public: virtual void __thiscall UObject::ShutdownAfterError(void)
+0x044  0x10101d20  public: virtual void __thiscall UObject::PostEditChange(void)
+0x048  0x10103bed  public: virtual void __thiscall UObject::PreEditUndo(void)
+0x04c  0x10101f9b  public: virtual void __thiscall UObject::PostEditUndo(void)
+0x050  0x1010128a  public: virtual void __thiscall UObject::CallFunction(struct FFrame &, void *const, class UFunction *)
+0x054  0x101047dc  public: virtual int __thiscall UObject::ScriptConsoleExec(unsigned short const *, class FOutputDevice &, class UObject *)
+0x058  0x101015c3  public: virtual void __thiscall UField::Register(void)
+0x05c  0x1010267b  public: virtual void __thiscall UObject::LanguageChange(void)
+0x060  0x10102e3c  public: virtual void __thiscall UObject::Rename(unsigned short const *, class UObject *)
+0x064  0x1010187f  public: virtual void __thiscall UObject::NetDirty(class UProperty *)
+0x068  0x10103846  public: virtual void __thiscall UObject::ImportPostProcess(unsigned short const *, unsigned short const *, class UObject const *)
+0x06c  0x1010384b  public: virtual void __thiscall UField::AddCppProperty(class UProperty *)
+0x070  0x10101efb  public: virtual int __thiscall UField::MergeBools(void)
+0x074  0x10102397  public: virtual void __thiscall UField::Bind(void)
+0x078  0x101018cf  public: virtual class UClass * __thiscall UField::GetOwnerClass(void)
+0x07c  0x10101028  public: virtual int __thiscall UField::GetPropertiesSize(void)
+0x080  0x10103634  public: virtual void __thiscall UProperty::CleanupDestroyed(unsigned char *) const
+0x084  0x10103139  public: virtual void __thiscall UProperty::Link(class FArchive &, class UProperty *)
+0x088  0x1017cfd2  ?
+0x08c  0x10102711  public: virtual void __thiscall UProperty::ExportCpp(class FOutputDevice &, int, int, int, int) const
+0x090  0x1017cfd2  ?
+0x094  0x1017cfd2  ?
+0x098  0x10101078  public: virtual int __thiscall UProperty::NetSerializeItem(class FArchive &, class UPackageMap *, void *) const
+0x09c  0x1017cfd2  ?
+0x0a0  0x1017cfd2  ?
+0x0a4  0x10101ea1  public: virtual int __thiscall UProperty::ExportText(int, unsigned short *, unsigned char *, unsigned char *, int) const
+0x0a8  0x10102699  public: virtual void __thiscall UProperty::CopySingleValue(void *, void *, class UObject *) const
+0x0ac  0x1010463d  public: virtual void __thiscall UProperty::CopyCompleteValue(void *, void *, class UObject *) const
+0x0b0  0x101030c6  public: virtual void __thiscall UProperty::DestroyValue(void *) const
+0x0b4  0x10101e38  public: virtual int __thiscall UProperty::Port(void) const
+0x0b8  0x1010365c  public: virtual unsigned char __thiscall UProperty::GetID(void) const

@@ -1,0 +1,82 @@
+instructions 734177
+BRANCHIND 2963 (resolved 2885)
+
+op BOOL_AND         350
+op BOOL_NEGATE      25783
+op BOOL_OR          6966
+op BOOL_XOR         260
+op BRANCH           21469
+op BRANCHIND        2963
+op CALL             20968
+op CALLIND          29224
+op CALLOTHER        349
+op CBRANCH          37689
+op COPY             1118955
+op FLOAT2FLOAT      65918
+op FLOAT_ABS        440
+op FLOAT_ADD        10686
+op FLOAT_DIV        837
+op FLOAT_EQUAL      4189
+op FLOAT_LESS       4209
+op FLOAT_MULT       16233
+op FLOAT_NAN        8378
+op FLOAT_NEG        927
+op FLOAT_SQRT       189
+op FLOAT_SUB        5650
+op INT2FLOAT        1915
+op INT_2COMP        225
+op INT_ADD          351017
+op INT_AND          244118
+op INT_CARRY        26950
+op INT_DIV          24
+op INT_EQUAL        209245
+op INT_LEFT         20204
+op INT_LESS         22520
+op INT_MULT         30310
+op INT_NEGATE       154
+op INT_NOTEQUAL     10513
+op INT_OR           36885
+op INT_REM          24
+op INT_RIGHT        1195
+op INT_SBORROW      24502
+op INT_SCARRY       33471
+op INT_SDIV         100
+op INT_SEXT         5006
+op INT_SLESS        102506
+op INT_SREM         100
+op INT_SRIGHT       1645
+op INT_SUB          194852
+op INT_XOR          12364
+op INT_ZEXT         23366
+op LOAD             214737
+op POPCOUNT         98462
+op RETURN           13200
+op ROUND            13
+op STORE            260469
+op SUBPIECE         4121
+op TRUNC            7
+userop cpuid <- CPUID                           3
+userop cpuid_Architectural_Performance_Monitoring_info <- CPUID 3
+userop cpuid_Deterministic_Cache_Parameters_info <- CPUID 3
+userop cpuid_Direct_Cache_Access_info <- CPUID  3
+userop cpuid_Extended_Feature_Enumeration_info <- CPUID 3
+userop cpuid_Extended_Topology_info <- CPUID    3
+userop cpuid_MONITOR_MWAIT_Features_info <- CPUID 3
+userop cpuid_Processor_Extended_States_info <- CPUID 3
+userop cpuid_Quality_of_Service_info <- CPUID   3
+userop cpuid_Thermal_Power_Management_info <- CPUID 3
+userop cpuid_Version_info <- CPUID              3
+userop cpuid_basic_info <- CPUID                3
+userop cpuid_brand_part1_info <- CPUID          3
+userop cpuid_brand_part2_info <- CPUID          3
+userop cpuid_brand_part3_info <- CPUID          3
+userop cpuid_cache_tlb_info <- CPUID            3
+userop cpuid_serial_info <- CPUID               3
+userop fcos <- FCOS                             18
+userop fpatan <- FPATAN                         3
+userop fsin <- FSIN                             15
+userop movmskps <- MOVMSKPS                     5
+userop rcpps <- RCPPS                           1
+userop rdtsc <- RDTSC                           251
+userop rsqrtps <- RSQRTPS                       4
+userop swi <- INT3                              1

@@ -1,0 +1,52 @@
+instructions 13463
+BRANCHIND 75 (resolved 74)
+
+op BOOL_AND         8
+op BOOL_NEGATE      777
+op BOOL_OR          85
+op BOOL_XOR         5
+op BRANCH           437
+op BRANCHIND        75
+op CALL             332
+op CALLIND          260
+op CALLOTHER        1
+op CBRANCH          586
+op COPY             11672
+op FLOAT2FLOAT      97
+op FLOAT_ADD        13
+op FLOAT_EQUAL      2
+op FLOAT_LESS       2
+op FLOAT_MULT       30
+op FLOAT_NAN        4
+op FLOAT_SUB        6
+op INT2FLOAT        26
+op INT_2COMP        26
+op INT_ADD          8114
+op INT_AND          6879
+op INT_CARRY        957
+op INT_EQUAL        5821
+op INT_LEFT         175
+op INT_LESS         706
+op INT_MULT         1528
+op INT_NEGATE       4
+op INT_NOTEQUAL     412
+op INT_OR           636
+op INT_RIGHT        54
+op INT_SBORROW      817
+op INT_SCARRY       1093
+op INT_SDIV         5
+op INT_SEXT         210
+op INT_SLESS        2968
+op INT_SREM         5
+op INT_SRIGHT       121
+op INT_SUB          3062
+op INT_XOR          243
+op INT_ZEXT         795
+op LOAD             4731
+op POPCOUNT         2736
+op RETURN           223
+op ROUND            1
+op STORE            4163
+op SUBPIECE         147
+op TRUNC            1
+userop swi <- INT3                              1

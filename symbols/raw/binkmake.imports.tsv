@@ -1,0 +1,5 @@
+dll	hint	name
+KERNEL32.DLL	0	LoadLibraryA
+KERNEL32.DLL	0	GetProcAddress
+USER32.dll	0	wsprintfA
+WINMM.dll	0	timeGetTime

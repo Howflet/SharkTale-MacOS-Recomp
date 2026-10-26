@@ -1,0 +1,8 @@
+callsite	name	size	class_flags	package	base
+1051246c	FractalTexture	240	0x1	Fire	?
+1051253e	FireTexture	1316	0xffffffffffffffff	Fire	?PrivateStaticClass@UFractalTexture@@0VUClass@@A
+10512601	WaterTexture	4880	0x1	Fire	?PrivateStaticClass@UFractalTexture@@0VUClass@@A
+105126be	WaveTexture	4884	0xffffffffffffffff	Fire	?PrivateStaticClass@UWaterTexture@@0VUClass@@A
+1051277e	FluidTexture	4880	0xffffffffffffffff	Fire	?PrivateStaticClass@UWaterTexture@@0VUClass@@A
+1051283e	WetTexture	4892	0xffffffffffffffff	Fire	?PrivateStaticClass@UWaterTexture@@0VUClass@@A
+105128fe	IceTexture	308	0xffffffffffffffff	Fire	?PrivateStaticClass@UFractalTexture@@0VUClass@@A

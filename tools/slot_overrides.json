@@ -1,0 +1,12 @@
+{
+  "_comment": "Virtual slots of engine interfaces that no exported class names (no exported descendant). Declarations in slot order; [I] from UE2's FMalloc, consistent with call sites (slot 0 Malloc(size, tag), slot 2 Free(ptr)).",
+  "FMalloc": [
+    "virtual void * __thiscall Malloc(unsigned long, unsigned short const *) = 0;",
+    "virtual void * __thiscall Realloc(void *, unsigned long, unsigned short const *) = 0;",
+    "virtual void __thiscall Free(void *) = 0;",
+    "virtual void __thiscall DumpAllocs(void) = 0;",
+    "virtual void __thiscall HeapCheck(void) = 0;",
+    "virtual void __thiscall Init(void) = 0;",
+    "virtual void __thiscall Exit(void) = 0;"
+  ]
+}

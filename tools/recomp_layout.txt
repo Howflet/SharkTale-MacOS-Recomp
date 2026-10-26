@@ -1,0 +1,17 @@
+# Guest address layout for recompiled modules: file  base  (preferred bases kept where they don't collide)
+Game.exe        0x10900000
+Core.dll        0x10100000
+Fire.dll        0x10500000
+IpDrv.dll       0x10700000
+Window.dll      0x11000000
+WinDrv.dll      0x11100000
+Engine.dll      0x11200000
+Editor.dll      0x11900000
+D3DDrv.dll      0x11b00000
+ALAudio.dll     0x11c40000
+StubAudio.dll   0x11c60000
+KWGame.dll      0x11c70000
+GUI.dll         0x11cb0000
+ogg.dll         0x11d20000
+vorbis.dll      0x11d30000
+vorbisfile.dll  0x11d50000

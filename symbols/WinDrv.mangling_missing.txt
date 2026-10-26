@@ -1,0 +1,3 @@
+??1UWindowsClient@@UAE@XZ	public: virtual __thiscall UWindowsClient::~UWindowsClient(void)
+??1UWindowsViewport@@UAE@XZ	public: virtual __thiscall UWindowsViewport::~UWindowsViewport(void)
+??1WWindowsViewportWindow@@UAE@XZ	public: virtual __thiscall WWindowsViewportWindow::~WWindowsViewportWindow(void)

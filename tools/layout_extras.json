@@ -1,0 +1,13 @@
+{
+  "_comment": "Hand-recovered fields for classes without script layouts, merged by export_layouts.py. Offsets from the decompiled code (see SHARKTALE_NOTES.md).",
+  "UALAudioSubsystem": [
+    ["Viewport", 60, 4, "ptr"],
+    ["DopplerFactor", 192, 4, "float"], ["MusicVolume", 196, 4, "float"], ["AmbientVolume", 200, 4, "float"],
+    ["SoundVolume", 204, 4, "float"], ["TimeBetweenHWUpdates", 208, 4, "float"], ["RollOff", 212, 4, "float"],
+    ["Channels", 216, 4, "int"], ["MaxEAXVersion", 220, 4, "int"],
+    ["ReverseStereo", 224, 4, "int"], ["UsePrecache", 228, 4, "int"], ["UseEAX", 232, 4, "int"],
+    ["Use3DSound", 236, 4, "int"], ["CompatibilityMode", 240, 4, "int"], ["UseDefaultDriver", 244, 4, "int"],
+    ["DisablePitch", 248, 4, "int"], ["LowQualitySound", 252, 4, "int"]
+  ],
+  "UStubAudioSubsystem": [["Viewport", 60, 4, "ptr"]]
+}

@@ -1,0 +1,1 @@
+??1UD3DRenderDevice@@UAE@XZ	public: virtual __thiscall UD3DRenderDevice::~UD3DRenderDevice(void)

@@ -1,0 +1,80 @@
+instructions 122264
+BRANCHIND 43 (resolved 37)
+
+op BOOL_AND         65
+op BOOL_NEGATE      4765
+op BOOL_OR          884
+op BOOL_XOR         56
+op BRANCH           5832
+op BRANCHIND        43
+op CALL             7043
+op CALLIND          1628
+op CALLOTHER        38
+op CBRANCH          6730
+op COPY             136231
+op FLOAT2FLOAT      4371
+op FLOAT_ADD        562
+op FLOAT_DIV        78
+op FLOAT_EQUAL      302
+op FLOAT_LESS       302
+op FLOAT_MULT       1155
+op FLOAT_NAN        604
+op FLOAT_NEG        78
+op FLOAT_SQRT       1
+op FLOAT_SUB        303
+op INT2FLOAT        89
+op INT_2COMP        73
+op INT_ADD          54059
+op INT_AND          42592
+op INT_CARRY        5269
+op INT_EQUAL        36602
+op INT_LEFT         1653
+op INT_LESS         4181
+op INT_MULT         5363
+op INT_NEGATE       75
+op INT_NOTEQUAL     1881
+op INT_OR           4700
+op INT_RIGHT        359
+op INT_SBORROW      4440
+op INT_SCARRY       6562
+op INT_SDIV         16
+op INT_SEXT         642
+op INT_SLESS        17847
+op INT_SREM         16
+op INT_SRIGHT       407
+op INT_SUB          37796
+op INT_XOR          1887
+op INT_ZEXT         2497
+op LOAD             31823
+op POPCOUNT         17224
+op RETURN           3508
+op ROUND            2
+op STORE            46124
+op SUBPIECE         522
+op TRUNC            1
+userop cpuid <- CPUID                           1
+userop cpuid_Architectural_Performance_Monitoring_info <- CPUID 1
+userop cpuid_Deterministic_Cache_Parameters_info <- CPUID 1
+userop cpuid_Direct_Cache_Access_info <- CPUID  1
+userop cpuid_Extended_Feature_Enumeration_info <- CPUID 1
+userop cpuid_Extended_Topology_info <- CPUID    1
+userop cpuid_MONITOR_MWAIT_Features_info <- CPUID 1
+userop cpuid_Processor_Extended_States_info <- CPUID 1
+userop cpuid_Quality_of_Service_info <- CPUID   1
+userop cpuid_Thermal_Power_Management_info <- CPUID 1
+userop cpuid_Version_info <- CPUID              1
+userop cpuid_basic_info <- CPUID                1
+userop cpuid_brand_part1_info <- CPUID          1
+userop cpuid_brand_part2_info <- CPUID          1
+userop cpuid_brand_part3_info <- CPUID          1
+userop cpuid_cache_tlb_info <- CPUID            1
+userop cpuid_serial_info <- CPUID               1
+userop f2xm1 <- F2XM1                           1
+userop fcos <- FCOS                             1
+userop fpatan <- FPATAN                         2
+userop fptan <- FPTAN                           1
+userop fscale <- FSCALE                         1
+userop fsin <- FSIN                             1
+userop log2 <- FYL2X                            1
+userop rdtsc <- RDTSC                           12
+userop swi <- INT3                              1

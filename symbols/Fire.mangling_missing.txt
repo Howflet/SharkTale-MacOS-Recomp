@@ -1,0 +1,7 @@
+??1UFireTexture@@UAE@XZ	public: virtual __thiscall UFireTexture::~UFireTexture(void)
+??1UFluidTexture@@UAE@XZ	public: virtual __thiscall UFluidTexture::~UFluidTexture(void)
+??1UFractalTexture@@UAE@XZ	public: virtual __thiscall UFractalTexture::~UFractalTexture(void)
+??1UIceTexture@@UAE@XZ	public: virtual __thiscall UIceTexture::~UIceTexture(void)
+??1UWaterTexture@@UAE@XZ	public: virtual __thiscall UWaterTexture::~UWaterTexture(void)
+??1UWaveTexture@@UAE@XZ	public: virtual __thiscall UWaveTexture::~UWaveTexture(void)
+??1UWetTexture@@UAE@XZ	public: virtual __thiscall UWetTexture::~UWetTexture(void)
