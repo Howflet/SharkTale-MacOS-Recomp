@@ -1,16 +1,17 @@
 #!/bin/zsh
 # Emit C for every module in tools/recomp_layout.txt (or just the named ones)
 # and regenerate src/Recomp/recomp_modules.h (relocation deltas + table list).
-#   tools/recomp_emit_all.sh [Module.dll ...]
+#   tools/recomp_emit_all.sh [Module.dll ...]     (GHIDRA_PROJECT=<dir> to use another project)
 set -uo pipefail
 ROOT=${0:A:h:h}
 GH=/opt/homebrew/opt/ghidra/libexec/support/analyzeHeadless
+PROJ=${GHIDRA_PROJECT:-$ROOT/ghidra}   # project from tools/setup_ghidra.sh
 typeset -a only; only=("$@")
 grep -v '^#' $ROOT/tools/recomp_layout.txt | while read file base; do
   [[ -z $file ]] && continue
   (( ${#only} )) && [[ ${only[(Ie)$file]} -eq 0 ]] && continue
   mod=${file:r}
-  $GH $ROOT/ghidra SharkTale -process $file -noanalysis -readOnly -scriptPath $ROOT/tools/ghidra_scripts \
+  $GH $PROJ SharkTale -process $file -noanalysis -readOnly -scriptPath $ROOT/tools/ghidra_scripts \
     -postScript EmitC.java $ROOT/build/recomp $base $mod 2>&1 | grep -oE "EmitC $mod: .*" | cut -c1-120
 done
 python3 -I - $ROOT <<'PY'

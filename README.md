@@ -82,21 +82,23 @@ The resolution is optional (the original is 800×600). The file uses Windows lin
 
 ### 1. Create the Ghidra project (once)
 
-The build reads a Ghidra project at `ghidra/SharkTale` containing the 16 modules listed in `tools/recomp_layout.txt`:
-
-```
-Game.exe Core.dll Fire.dll IpDrv.dll Window.dll WinDrv.dll Engine.dll Editor.dll
-D3DDrv.dll ALAudio.dll StubAudio.dll KWGame.dll GUI.dll ogg.dll vorbis.dll vorbisfile.dll
+```bash
+tools/setup_ghidra.sh
 ```
 
-1. Import them from `orig/System` with Ghidra's default auto-analysis, using `analyzeHeadless` from `$(brew --prefix ghidra)/libexec/support/`. Analysis takes a few minutes in total.
-2. Run these scripts from `tools/ghidra_scripts/` in **saving** mode (not `-readOnly`). They make the program databases complete enough to translate:
-   - `FixVarargs.java`
-   - `CreateDataReferencedFunctions.java`: functions reached only from data tables
-   - `CreateStubTargets.java`: incremental-link `jmp` thunk tables
-   - `PropagateThunkNames.java`
+This takes about 5 minutes on an M-series Mac. It:
+1. Checks `orig/System` against `docs/SHA256SUMS`.
+2. Imports the 16 modules in `tools/recomp_layout.txt` with Ghidra's default analysis.
+3. Runs the fix-up scripts in `tools/ghidra_scripts/` that make the program databases complete enough to translate:
+   - `PropagateThunkNames`
+   - `ApplyLayouts`
+   - `FixVarargs`
+   - `CreateDataReferencedFunctions`: functions reached only from data tables
+   - `CreateStubTargets`: incremental-link `jmp` thunk tables
 
-> **Caveat:** the project used for this port was built up step by step (see `SHARKTALE_NOTES.md` §5 and §9). A single tested script that recreates it from scratch is not in the repo yet.
+The project goes in `ghidra/`, or pass a directory and build with `GHIDRA_PROJECT=<dir> tools/recomp_build_all.sh`.
+
+**Tested from scratch:** a project made by this script produced generated C byte-identical to the original build (all 247 files), and the game built from it runs. This was with Ghidra 12.2; other Ghidra versions may analyse differently.
 
 ### 2. Translate, compile and link
 

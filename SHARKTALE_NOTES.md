@@ -665,3 +665,18 @@ When running from a bundle, the executable always uses its own `Contents/Resourc
 [U] Not tried: deleting the CrossOver bottle or Homebrew's FFmpeg for real. The trace shows neither is used.
 
 The bundle contains Activision's game data and GPL FFmpeg builds. It is for personal use only; don't distribute it.
+
+## 15. Reproducible setup (2026-10-26)
+
+`tools/setup_ghidra.sh [dir]` recreates the Ghidra project from `orig/System`:
+- It checks the hashes against `docs/SHA256SUMS`.
+- It imports the 16 modules with default analysis.
+- It runs PropagateThunkNames, ApplyLayouts, FixVarargs, CreateDataReferencedFunctions, CreateStubTargets and PropagateThunkNames again, the order the original project was built in (recovered from the session history).
+- It takes 5 minutes.
+
+`recomp_emit_all.sh` honours `GHIDRA_PROJECT`.
+
+**Verified [C]:**
+- A fresh project in a scratch directory, followed by `GHIDRA_PROJECT=… tools/recomp_build_all.sh`, produced generated C **byte-identical** to the known-good build: all 247 `.c` files and `recomp_modules.h`.
+- The self-test passes, and the movies, main menu and a clean exit all work.
+- The "unresolved indirect jumps" counts in EmitC's log summary differ slightly between runs, but the emitted code does not.
