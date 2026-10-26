@@ -1344,6 +1344,8 @@ u32 d3d8_create_device(Ctx* c, u32 hwnd, u32 behavior, u32 pp, u32 out_device)
 	ST4(out_device, D.guest);
 	extern void rt_install_d3d_hooks(void);
 	rt_install_d3d_hooks();
+	extern void rt_install_viewport_hook(void);
+	rt_install_viewport_hook();
 	fprintf(stderr, "[d3d8] device %ux%u %s, depth %s\n", D.width, D.height, D.windowed ? "windowed" : "fullscreen",
 		D.auto_depth ? "on" : "off");
 	return D3D_OK;

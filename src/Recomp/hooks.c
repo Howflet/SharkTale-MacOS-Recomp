@@ -387,3 +387,35 @@ void rt_selftest(Ctx* c)
 		return;
 	selftest_spherecheck(c);
 }
+
+/*-----------------------------------------------------------------------------
+	The game viewport, for the game controller (gamepad.m): whether a menu
+	is up. UWindowsViewport::UpdateInput runs every frame with the viewport
+	in ECX. Installed once the render device exists (WinDrv is loaded).
+-----------------------------------------------------------------------------*/
+
+static RecompFn OrigUpdateInput;
+static u32 Viewport;
+
+static void hook_update_input(Ctx* c)
+{
+	Viewport = R4(REG_ECX);
+	OrigUpdateInput(c);
+}
+
+void rt_install_viewport_hook(void)
+{
+	static int done;
+	GuestModule* windrv = rt_find_module("WinDrv.dll");
+	if (done || !windrv)
+		return;
+	done = 1;
+	OrigUpdateInput = hook(windrv, "?UpdateInput@UWindowsViewport@@UAEXHM@Z", hook_update_input);
+}
+
+/* bShowWindowsMouse (UPlayer +0x48, bit 1): set while a menu (front end or
+   pause) wants the cursor, clear in gameplay, cutscenes and intro movies. */
+int rt_menu_active(void)
+{
+	return Viewport && (LD4(Viewport + 0x48) & 2);
+}

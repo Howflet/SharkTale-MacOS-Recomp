@@ -686,12 +686,18 @@ The bundle contains Activision's game data and GPL FFmpeg builds. It is for pers
 
 ## 16. Game controllers (2026-10-26)
 
-`src/Recomp/gamepad.m` reads the current extended gamepad (GameController.framework) once per event pump and turns it into the game's own **keyboard and mouse** input, not a DirectInput joystick:
+`src/Recomp/gamepad.m` reads the current extended gamepad (GameController.framework) once per frame and turns it into the game's own **keyboard and mouse** input, not a DirectInput joystick:
 - WinDrv does support a DirectInput joystick (`EnumDevices(DI8DEVCLASS_GAMECTRL)`, `c_dfDIJoystick2`, buttons → `IK_Joy1..12`, POV → `IK_JoyPov*`, axes → `IK_JoyX/Y/Z/R/U/V/Slider*`), but the default `Joy*` bindings in `DefUser.ini` expect an old pad: swimming is a button and both sticks turn and look. Changing them would mean editing each player's `User.ini`.
-- The menus are mouse-driven, so a joystick alone could not use them.
+- The menus are mouse- and keyboard-driven, so a joystick alone could not use them.
 
-Mapping: left stick → W A S D (press past 0.5, release below 0.35); right stick → relative mouse motion (dead zone 0.15, squared response, `SHARK_PAD_SPEED` points/s at full tilt, default 1200), which also moves the menus' virtual cursor; A/B → left/right mouse button; X → Space; Y → F; RT/LT → Shift/Ctrl; d-pad → arrows; Menu → Escape; Options → Backspace.
+**Two layouts**, switched by `rt_menu_active()` (`hooks.c`): a hook on `UWindowsViewport::UpdateInput` keeps the viewport pointer, and `UPlayer::bShowWindowsMouse` (+0x48, bit 1) is set exactly while a menu wants the cursor: front end and pause menu, not gameplay, cutscenes or the intro movies. (Traced: the GUIController's `bActive` and its `MenuStack` count follow it too. No Win32 call marks the switch.)
+- Gameplay: left stick → W A S D (press past 0.5, release below 0.35); right stick → relative mouse motion; A/B → left/right mouse button; X → Space; Y → F; RT/LT → Shift/Ctrl; d-pad → arrows; Menu → Escape; Options → Backspace.
+- Menus: left stick → mouse (the cursor); d-pad → arrows, which move the highlight (save slots included); Cross → Enter on the highlighted item, or a left click if the stick moved the cursor more recently than the d-pad; Circle and Menu → Escape (back).
+- Buttons held across a layout switch stay inert until released, so the Menu press that opens the pause menu does not also close it.
+- Sticks: radial dead zone 0.25 (a worn DualSense rested at −0.19 on the right X axis and crept the cursor), squared response, `SHARK_PAD_SPEED` points/s at full tilt (default 1200).
 
-`gfx_metal.m` exposes `host_key`, `host_mouse_button` and `host_mouse_motion` for it (the old `mouse_position` is split into `mouse_motion`). Using the pad captures the mouse, like a click in the game. When the window is not key every held control is released. Connects and disconnects are logged as `[pad]`.
+**Bug found in the first version:** it polled on every event pump, and the game pumps on every `PeekMessage`, so each check posted another WM_MOUSEMOVE and the game's message loop never saw an empty queue; the menu cursor never moved. Polling now happens once per frame in `gfx_present`.
 
-[C] Builds without warnings; a windowed run to the menu and a clean quit work as before. [U] Not yet tried with a physical controller (none was switched on).
+`gfx_metal.m` exposes `host_key`, `host_mouse_button` and `host_mouse_motion` (the old `mouse_position` is split into `mouse_motion`). Using the pad captures the mouse, like a click in the game. When the window is not key every held control is released. `SHARK_PAD_TRACE=1` logs raw element changes, control changes and layout switches.
+
+[C] With a DualSense: camera and swimming in gameplay, the stick-driven cursor, d-pad highlighting, L2 reaching the game. Scripted: Enter selects the highlighted main-menu item and save slot, reaching LowerCity; Escape steps back through the menu stack.

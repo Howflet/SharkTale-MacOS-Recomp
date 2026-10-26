@@ -140,20 +140,21 @@ open "Shark Tale.app"
   - The game captures the mouse while it has focus. **Cmd-Tab** releases it.
   - In a **window**, the mouse is free so you can move and resize the window. **Click** in the game to capture it; press **⌘** to release it.
 - **Keys:** the game's normal Windows controls. **Cmd-Q** quits.
-- **Controller:** any controller macOS supports (Xbox, DualSense/DualShock, Switch Pro, MFi). Connect it in System Settings → Bluetooth (or by USB); it works as soon as it is on, even mid-game. It drives the game's keyboard and mouse controls, so it works in menus too:
+- **Controller:** any controller macOS supports (Xbox, DualSense/DualShock, Switch Pro, MFi). Connect it in System Settings → Bluetooth (or by USB); it works as soon as it is on, even mid-game. It drives the game's keyboard and mouse controls, with one layout for menus and one for play:
 
-  | Control | Does |
-  |---|---|
-  | Left stick | swim and strafe (W A S D) |
-  | Right stick | camera; moves the cursor in menus |
-  | A / Cross | swim forward; click in menus |
-  | B / Circle | attack (Use / Fire) |
-  | X / Square | launch urchin; skip movies |
-  | Y / Triangle | use |
-  | RT / LT | swim forward / back |
-  | D-pad | arrow keys |
-  | Menu (Start) | main menu |
-  | Options (Back) | skip cutscene |
+  | Control | In menus | In game |
+  |---|---|---|
+  | Left stick | move the cursor | swim and strafe (W A S D) |
+  | Right stick | | camera |
+  | D-pad | highlight items | arrow keys |
+  | A / Cross | select the highlighted item (or click, if you moved the cursor last) | swim forward |
+  | B / Circle | back | attack (Use / Fire) |
+  | X / Square | | launch urchin; skip movies |
+  | Y / Triangle | | use |
+  | RT / LT | | swim forward / back |
+  | Menu (Start / Options) | back | pause menu |
+  | Options (Back / Create) | | skip cutscene |
+
 - **Saves and settings** are kept in `~/Library/Application Support/Shark Tale/`, never inside the app.
 - **Log:** `~/Library/Logs/SharkTaleNative.log`.
 
@@ -182,7 +183,8 @@ These are environment variables; details are in `SHARKTALE_NOTES.md`.
 | `SHARK_SELFTEST=1` | Check recompiled maths kernels against C references |
 | `SHARK_FPS=1` | Print the frame rate |
 | `SHARK_MAXFPS=<n>` | Frame rate cap (default 60; `0` removes it) |
-| `SHARK_PAD_SPEED=<n>` | Controller right-stick speed at full tilt, in points per second (default 1200) |
+| `SHARK_PAD_SPEED=<n>` | Controller stick speed (camera, menu cursor) at full tilt, in points per second (default 1200) |
+| `SHARK_PAD_TRACE=1` | Log every controller input and layout switch |
 | `SHARK_USER_DIR=<dir>` | Where player data goes |
 
 Other tools:

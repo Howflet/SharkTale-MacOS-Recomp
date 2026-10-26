@@ -397,7 +397,6 @@ void gfx_pump_events(void)
 			if (forward)
 				[NSApp sendEvent:e];
 		}
-		gamepad_poll([G.window isKeyWindow]);
 	}
 }
 
@@ -881,6 +880,10 @@ void gfx_present(void)
 		G.cmd = nil;
 		G.frame++;
 		G.draws = 0;
+		/* Once a frame, not per event pump: the game pumps on every PeekMessage
+		   and would never see its queue empty if each pump posted a mouse move. */
+		if (!G.headless)
+			gamepad_poll([G.window isKeyWindow]);
 		limit_frame_rate();
 		/* Drawable resizing follows the view (Retina backing). */
 		if (G.layer)
