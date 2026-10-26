@@ -13,3 +13,8 @@ build/
 
 # macOS
 .DS_Store
+
+# Kept locally, not published: decompiled game code and raw run logs.
+docs/decomp/
+docs/runs/
+docs/baseline/*.log

@@ -181,7 +181,7 @@ src/Recomp/            runtime: memory, dispatch, loader, Win32/DirectX replacem
 tools/ghidra_scripts/  EmitC (the translator) and Ghidra fix-up/analysis scripts
 tools/                 build, app packaging, benchmark and analysis scripts
 symbols/               symbol database and per-module function/vtable tables derived from the binaries
-docs/                  screenshots, baseline logs, binary hashes
+docs/                  screenshots and the original binaries' hashes
 SHARKTALE_NOTES.md     the engineering log
 ```
 
@@ -194,6 +194,6 @@ SHARKTALE_NOTES.md     the engineering log
 
 ## Legal
 
-Shark Tale is © DreamWorks Animation / Activision. This project contains **no game code or assets**; the game files must come from your own legitimate copy. The symbol tables and notes in this repository are derived from analysing the original binaries, so keep it private unless you have reviewed that.
+Shark Tale is © DreamWorks Animation / Activision. This project contains **no game code or assets**: the game files must come from your own legitimate copy, and the translator generates the C code locally from them. The repository holds only original code, plus symbol names, layouts and notes from analysing the binaries. Decompiled listings and raw run logs are deliberately kept out of it.
 
 The app built by `tools/make_app.sh` contains the game's data and GPL-licensed FFmpeg libraries. It is for your personal use; do not distribute it.
