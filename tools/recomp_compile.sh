@@ -9,9 +9,18 @@ SRC=$ROOT/build/recomp/$MODULE
 OBJ=$ROOT/build/recomp/obj/$MODULE
 mkdir -p $OBJ
 
+# Functions replaced natively (tools/native_overrides.txt): rename their
+# generated definitions to <name>_recomp.
+typeset -A DEFS
+while read -r mod fn _; do
+  [[ $mod == $MODULE && -n $fn ]] || continue
+  def=$(grep -l "^void $fn(Ctx\* restrict c) {" $SRC/*.c | head -1)
+  [[ -n $def ]] && DEFS[$def]+=" -D$fn=${fn}_recomp"
+done < <(grep -v '^#' $ROOT/tools/native_overrides.txt)
+
 compile_one() {
   local f=$1 b=${1:t:r}
-  /usr/bin/clang -c -O2 -w -I$ROOT/src/Recomp -I$SRC -o $OBJ/$b.o $f 2> $OBJ/$b.err
+  /usr/bin/clang -c -O2 -w ${=DEFS[$f]:-} -I$ROOT/src/Recomp -I$SRC -o $OBJ/$b.o $f 2> $OBJ/$b.err
   echo "$b $?"
 }
 

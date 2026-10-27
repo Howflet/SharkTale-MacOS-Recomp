@@ -517,7 +517,8 @@ Within one instruction, p-code can write a wide temporary and then read its lane
 | `SHARK_TRACE_FILES=1` | Log file opens |
 | `SHARK_TRACE_MATERIALS=1` | Log D3DDrv `SetMaterial` results |
 | `SHARK_TRACE_SLOTS=1` | Call counts per render-interface vtable slot |
-| `SHARK_SELFTEST=1` | Recompiled-kernel checks against C references |
+| `SHARK_SELFTEST=1` | Recompiled-kernel checks against C references; native replacements run against the recompiled code |
+| `SHARK_RECOMP_LIGHTING=1` | Recompiled static-mesh lighting instead of the native one |
 
 Example run to gameplay: `SHARK_SCRIPT="23000:k28,25990:m135/175,26000:c135/175,28990:m320/345,29000:c320/345"` (New Game → slot 1 → Yes).
 
@@ -701,3 +702,27 @@ The bundle contains Activision's game data and GPL FFmpeg builds. It is for pers
 `gfx_metal.m` exposes `host_key`, `host_mouse_button` and `host_mouse_motion` (the old `mouse_position` is split into `mouse_motion`). Using the pad captures the mouse, like a click in the game. When the window is not key every held control is released. `SHARK_PAD_TRACE=1` logs raw element changes, control changes and layout switches.
 
 [C] With a DualSense: camera and swimming in gameplay, the stick-driven cursor, d-pad highlighting, L2 reaching the game. Scripted: Enter selects the highlighted main-menu item and save slot, reaching LowerCity; Escape steps back through the menu stack.
+
+## 17. Faster loading after missions (2026-10-26)
+
+**User report:** the loading screen after a mission is long.
+
+**Where the time goes [C]** (the player's `Game.log`, plus timed headless runs). A mission returns to LowerCity: `LoadMap` (about 2.4 s), then autosaves. Each `UGameEngine::SaveGame` draws the level through `PaintProgress` with precaching on, both before and after `SavePackage` (`Save=` about 1.06 s). Each precache spent about **3 s in "precaching geometry"**. Profile: `FStaticMeshBatchVertexStream::GetStreamData` → `FUN_104b48a0`, which relights a static mesh's vertices into its `UStaticMeshInstance` colour cache.
+- `GetStreamData` calls it once per batch element. Each call zeroes the cache, bumps the revision (+0x60), and for every light in the instance's list (+0x38/+0x3c, 0x14-byte entries: light, visibility bits, lit flag at +0x10) loops over all vertices (`mesh+0x78`, 0x18 bytes: position, normal; count `mesh+0x7c`).
+- It transforms each position and normal by `FDynamicActor::LocalToWorld` and calls `SafeNormal` **before** testing the vertex's visibility bit. For unlit vertices the result is unused, and this x87 work was the self time.
+- Lit vertices: `SampleIntensity(pos, normal)` × (actor `+0x2c0` × const × light colour), then `FColor(FPlane)` and a saturating `FColor +=`. A final pass modulates by the mesh's vertex colours (`+0x98`, when `+0x154`) and copies their alpha.
+
+**Native replacement:** `src/Recomp/native_lighting.c` does the same work in the same order and precision (doubles, as the recompiled x87 code keeps them, rounding to float where the original stores). It transforms only lit vertices. `SafeNormal`, `SampleIntensity` and the `FColor` calls still run as guest code through `rt_call_guest`, and the scratch they need sits below the guest stack pointer.
+- **Override mechanism:** the caller reaches it by a direct C call (thunk `F_1130ae66` → `F_113b48a0`), not through dispatch, so `rt_register` can't hook it. `tools/native_overrides.txt` lists `<Module> <function>`. `tools/recomp_compile.sh` compiles the file that defines each one with `-D<fn>=<fn>_recomp`, so the native definition links in its place and can still call the recompiled one.
+- `SHARK_SELFTEST=1` runs native and then recompiled on every call (resetting the revision), and compares the colour cache, the revision and the lit flags. `SHARK_RECOMP_LIGHTING=1` uses the recompiled version only.
+
+**Verified [C]**, headless, uncapped, New Game → LowerCity → autosave (the same steps as a mission return):
+- Self-test: **0/3026 calls differ** (bit-identical); exit 0.
+- Geometry precache: 3.07 s → **1.41 s**, and 2.90 s → **1.31 s**.
+- From `LoadMap: LowerCity` to the end of the autosave's second precache: **10.8 s → 7.4 s**.
+- What is left is spread out: `FMemCache::Create`, `FUN_104af570/afae0/af830`, property serialisation for the save, and the guest calls for lit vertices.
+
+**Not verified:** an actual mission end in the window (the steps above are the same work, measured headless).
+
+**Found in passing:** the `savegame <n>` console command crashes the dev build (a call through a null pointer, from `0x1041cab1`). The game's own autosaves are unaffected.
+

@@ -180,7 +180,8 @@ These are environment variables; details are in `SHARKTALE_NOTES.md`.
 | `SHARK_TRACE_FILES=1` | Log file opens |
 | `SHARK_TRACE_DRAWS=<frame>` | Describe one frame's draws |
 | `SHARK_TRACE_EH=1` | Log C++ exceptions |
-| `SHARK_SELFTEST=1` | Check recompiled maths kernels against C references |
+| `SHARK_SELFTEST=1` | Check recompiled maths kernels against C references, and native replacements against the recompiled code |
+| `SHARK_RECOMP_LIGHTING=1` | Use the recompiled static-mesh lighting instead of the native one |
 | `SHARK_FPS=1` | Print the frame rate |
 | `SHARK_MAXFPS=<n>` | Frame rate cap (default 60; `0` removes it) |
 | `SHARK_PAD_SPEED=<n>` | Controller stick speed (camera, menu cursor) at full tilt, in points per second (default 1200) |

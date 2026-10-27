@@ -1,0 +1,6 @@
+# Generated functions replaced by native code in src/Recomp.
+# tools/recomp_compile.sh compiles the file that defines each one with
+# -D<function>=<function>_recomp, so the native definition links in its place
+# (and can still call the recompiled one by that name).
+#   <Module> <function>   # what it is
+Engine F_113b48a0   # FUN_104b48a0: static mesh vertex lighting (src/Recomp/native_lighting.c)
