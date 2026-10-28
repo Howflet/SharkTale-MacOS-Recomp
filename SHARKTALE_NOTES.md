@@ -652,7 +652,7 @@ Causes and fixes:
 - `Contents/Frameworks` holds 14 libraries: libavcodec, libavutil and their whole Homebrew dependency closure (x264/x265/vpx/dav1d/opus/lame/mpg123/ssl/crypto/lzma/swresample/SvtAv1). They are relinked to `@loader_path`, ad-hoc signed, and reached through the unversioned `libavcodec.dylib`/`libavutil.dylib` symlinks. `bink_video.c` tries `@executable_path/../Frameworks` first and logs which copy it used.
 - The executable links only system libraries.
 
-**Player data** lives in `~/Library/Application Support/Shark Tale/`. This is a writable overlay over the read-only game files (`g_user_root`, set when running from a bundle; override with `SHARK_USER_DIR`):
+**Player data** lives in `~/Library/Application Support/Shark Tale/`. This is a writable overlay over the read-only game files (`g_user_root`; override with `SHARK_USER_DIR`). Since 2026-10-28, runs outside a bundle (the bare `build/sharktale`) use `Shark Tale (Dev)/` instead of writing into `game/System`, so scripted test runs that autosave never overwrite the player's save. The choice is made after `--game-dir` is parsed.
 - **Reads** prefer the overlay copy when one exists; `System/Save` always maps there.
 - **Writes** (CreateFile for writing, CreateDirectory, Delete, Move, Copy) go to the overlay, copying the bundled original first unless the file is being truncated.
 - The first `make_app.sh` seeds it with the project's `Save/` and `User.ini`.

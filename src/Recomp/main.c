@@ -61,17 +61,6 @@ int main(int argc, char** argv)
 	}
 	setvbuf(stderr, NULL, _IONBF, 0);
 	g_game_dir = default_game_dir();
-	/* Inside an app bundle the game files are read-only: player data goes to Application Support. */
-	{
-		extern char g_user_root[1024];
-		const char* env = getenv("SHARK_USER_DIR");
-		if (env && *env)
-			snprintf(g_user_root, sizeof g_user_root, "%s", env);
-		else if (strstr(g_game_dir, ".app/Contents/Resources/") && getenv("HOME"))
-			snprintf(g_user_root, sizeof g_user_root, "%s/Library/Application Support/Shark Tale", getenv("HOME"));
-		if (g_user_root[0])
-			fprintf(stderr, "[main] player data in %s\n", g_user_root);
-	}
 	static char cmd[4096] = "\"C:\\Shark Tale\\System\\Game.exe\"";
 	for (int i = 1; i < argc; i++)
 	{
@@ -84,6 +73,21 @@ int main(int argc, char** argv)
 		strncat(cmd, argv[i], sizeof cmd - strlen(cmd) - 1);
 	}
 	g_command_line = cmd;
+	/* Player data (saves, User.ini, written .ini files, logs) never goes in the game files.
+	   The app uses Application Support/Shark Tale; other runs use a separate "(Dev)" folder,
+	   so test runs that autosave can't overwrite the player's save. */
+	{
+		extern char g_user_root[1024];
+		const char* env = getenv("SHARK_USER_DIR");
+		const char* home = getenv("HOME");
+		if (env && *env)
+			snprintf(g_user_root, sizeof g_user_root, "%s", env);
+		else if (home)
+			snprintf(g_user_root, sizeof g_user_root, "%s/Library/Application Support/Shark Tale%s", home,
+				strstr(g_game_dir, ".app/Contents/Resources/") ? "" : " (Dev)");
+		if (g_user_root[0])
+			fprintf(stderr, "[main] player data in %s\n", g_user_root);
+	}
 
 	rt_mem_init();
 	Ctx* c = rt_new_thread_ctx();

@@ -36,9 +36,9 @@ void x87_push(Ctx* c, f80 v);
 void hle_host_path(const char* guest, char* out, size_t cap);
 void hle_host_wpath(u32 gwpath, char* out, size_t cap);
 extern char g_guest_cwd[1024];
-/* Running from an app bundle, writes (saves, .ini, logs) go to this overlay
-   root (~/Library/Application Support/Shark Tale) and reads prefer it. */
-extern char g_user_root[1024];  /* Windows-style, e.g. C:\Shark Tale\System */
+/* Writes (saves, .ini, logs) go to this overlay root and reads prefer it:
+   ~/Library/Application Support/Shark Tale from the app bundle, "Shark Tale (Dev)" otherwise. */
+extern char g_user_root[1024];  /* host path, no trailing slash */
 
 /* Win32 error code for GetLastError. */
 void hle_set_last_error(u32 e);

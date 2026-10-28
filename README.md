@@ -158,7 +158,7 @@ open "Shark Tale.app"
 - **Saves and settings** are kept in `~/Library/Application Support/Shark Tale/`, never inside the app.
 - **Log:** `~/Library/Logs/SharkTaleNative.log`.
 
-You can also run the bare executable from the project folder. It uses `./game/System`:
+You can also run the bare executable from the project folder. It reads `./game/System`, and keeps its saves and settings in `~/Library/Application Support/Shark Tale (Dev)/`, apart from the app's:
 ```bash
 build/sharktale
 ```
@@ -186,7 +186,7 @@ These are environment variables; details are in `SHARKTALE_NOTES.md`.
 | `SHARK_MAXFPS=<n>` | Frame rate cap (default 60; `0` removes it) |
 | `SHARK_PAD_SPEED=<n>` | Controller stick speed (camera, menu cursor) at full tilt, in points per second (default 1200) |
 | `SHARK_PAD_TRACE=1` | Log every controller input and layout switch |
-| `SHARK_USER_DIR=<dir>` | Where player data goes |
+| `SHARK_USER_DIR=<dir>` | Where player data goes (default: `~/Library/Application Support/Shark Tale`, or `Shark Tale (Dev)` for the bare executable) |
 
 Other tools:
 - `tools/bench.sh`: a scripted gameplay benchmark.
