@@ -59,16 +59,16 @@ typedef struct
 
 static struct
 {
-	int ok, headless, width, height;
+	int ok, headless, width, height, samples;
 	id<MTLDevice> dev;
 	id<MTLCommandQueue> queue;
 	id<MTLLibrary> lib;
 	id<MTLFunction> vs, fs;
-	id<MTLRenderPipelineState> blit;
+	id<MTLRenderPipelineState> blit, blit_ms;
 	NSMutableDictionary* pipelines;
 	NSMutableDictionary* depth_states;
 	NSMutableDictionary* samplers;
-	id<MTLTexture> color, depth, white2d, whitecube;
+	id<MTLTexture> color, ms_color, depth, white2d, whitecube;  /* color: resolved image; ms_color: nil without MSAA */
 	NSWindow* window;
 	NSView* view;
 	CAMetalLayer* layer;
@@ -491,23 +491,39 @@ static void run_script(unsigned frame)
 	Init.
 -----------------------------------------------------------------------------*/
 
-static id<MTLTexture> make_target(MTLPixelFormat fmt, int w, int h, MTLStorageMode storage)
+static id<MTLTexture> make_target(MTLPixelFormat fmt, int w, int h, int samples, MTLStorageMode storage)
 {
 	MTLTextureDescriptor* d = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:fmt width:(NSUInteger)w
 																			   height:(NSUInteger)h mipmapped:NO];
 	d.usage = MTLTextureUsageRenderTarget | MTLTextureUsageShaderRead;
 	d.storageMode = storage;
+	if (samples > 1)
+	{
+		d.textureType = MTLTextureType2DMultisample;
+		d.sampleCount = (NSUInteger)samples;
+	}
 	return [G.dev newTextureWithDescriptor:d];
 }
 
 static void make_targets(void)
 {
-	G.color = make_target(MTLPixelFormatBGRA8Unorm, G.width, G.height, MTLStorageModeShared);
-	G.depth = make_target(MTLPixelFormatDepth32Float_Stencil8, G.width, G.height, MTLStorageModePrivate);
+	G.color = make_target(MTLPixelFormatBGRA8Unorm, G.width, G.height, 1, MTLStorageModeShared);
+	G.ms_color = G.samples > 1 ? make_target(MTLPixelFormatBGRA8Unorm, G.width, G.height, G.samples, MTLStorageModePrivate) : nil;
+	G.depth = make_target(MTLPixelFormatDepth32Float_Stencil8, G.width, G.height, G.samples, MTLStorageModePrivate);
 	G.clear_flags = 7;
 	G.clear_color = 0xff000000u;
 	G.clear_z = 1;
 	G.clear_stencil = 0;
+}
+
+/* SHARK_MSAA: samples per pixel (default 4); 0 or 1 turns MSAA off. */
+static int pick_samples(void)
+{
+	const char* env = getenv("SHARK_MSAA");
+	int n = env ? atoi(env) : 4;
+	while (n > 1 && !([G.dev supportsTextureSampleCount:(NSUInteger)n]))
+		n--;
+	return n < 1 ? 1 : n;
 }
 
 int gfx_init(int width, int height, int fullscreen)
@@ -547,6 +563,9 @@ int gfx_init(int width, int height, int fullscreen)
 		bd.fragmentFunction = [G.lib newFunctionWithName:@"blit_fs"];
 		bd.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
 		G.blit = [G.dev newRenderPipelineStateWithDescriptor:bd error:&err];
+		G.samples = pick_samples();
+		bd.rasterSampleCount = (NSUInteger)G.samples;
+		G.blit_ms = [G.dev newRenderPipelineStateWithDescriptor:bd error:&err];
 		G.pipelines = [NSMutableDictionary new];
 		G.depth_states = [NSMutableDictionary new];
 		G.samplers = [NSMutableDictionary new];
@@ -615,7 +634,7 @@ int gfx_init(int width, int height, int fullscreen)
 				[G.window toggleFullScreen:nil];
 		}
 		G.ok = 1;
-		fprintf(stderr, "[gfx] Metal on %s, %dx%d%s\n", [[G.dev name] UTF8String], width, height,
+		fprintf(stderr, "[gfx] Metal on %s, %dx%d, %dx MSAA%s\n", [[G.dev name] UTF8String], width, height, G.samples,
 			G.headless ? " (headless)" : "");
 	}
 	return 1;
@@ -698,8 +717,19 @@ static void begin_pass(void)
 		return;
 	begin_frame();
 	MTLRenderPassDescriptor* p = [MTLRenderPassDescriptor renderPassDescriptor];
-	p.colorAttachments[0].texture = G.color;
-	p.colorAttachments[0].storeAction = MTLStoreActionStore;
+	/* A frame has many passes (every Clear restarts one), so the samples are stored for the next
+	   pass to load, and each pass resolves into G.color for Present and CPU reads. */
+	if (G.ms_color)
+	{
+		p.colorAttachments[0].texture = G.ms_color;
+		p.colorAttachments[0].resolveTexture = G.color;
+		p.colorAttachments[0].storeAction = MTLStoreActionStoreAndMultisampleResolve;
+	}
+	else
+	{
+		p.colorAttachments[0].texture = G.color;
+		p.colorAttachments[0].storeAction = MTLStoreActionStore;
+	}
 	if (G.clear_flags & 1)
 	{
 		uint32_t c = G.clear_color;
@@ -806,6 +836,19 @@ void gfx_backbuffer_write(const void* src, int pitch)
 					 sourceSize:MTLSizeMake((NSUInteger)G.width, (NSUInteger)G.height, 1)
 					  toTexture:G.color destinationSlice:0 destinationLevel:0 destinationOrigin:MTLOriginMake(0, 0, 0)];
 		[blit endEncoding];
+		if (G.ms_color)
+		{
+			/* Copy into the samples too, or the next pass's resolve would overwrite this. */
+			MTLRenderPassDescriptor* p = [MTLRenderPassDescriptor renderPassDescriptor];
+			p.colorAttachments[0].texture = G.ms_color;
+			p.colorAttachments[0].loadAction = MTLLoadActionDontCare;
+			p.colorAttachments[0].storeAction = MTLStoreActionStore;
+			id<MTLRenderCommandEncoder> e = [G.cmd renderCommandEncoderWithDescriptor:p];
+			[e setRenderPipelineState:G.blit_ms];
+			[e setFragmentTexture:G.color atIndex:0];
+			[e drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:3];
+			[e endEncoding];
+		}
 	}
 }
 
@@ -953,6 +996,7 @@ static id<MTLRenderPipelineState> pipeline_for(const GfxState* s)
 	d.colorAttachments[0].pixelFormat = MTLPixelFormatBGRA8Unorm;
 	d.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float_Stencil8;
 	d.stencilAttachmentPixelFormat = MTLPixelFormatDepth32Float_Stencil8;
+	d.rasterSampleCount = (NSUInteger)G.samples;
 	MTLRenderPipelineColorAttachmentDescriptor* ca = d.colorAttachments[0];
 	uint32_t wm = s->rs[168] & 15;
 	ca.writeMask = (wm & 1 ? MTLColorWriteMaskRed : 0) | (wm & 2 ? MTLColorWriteMaskGreen : 0) |

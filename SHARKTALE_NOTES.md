@@ -726,3 +726,17 @@ The bundle contains Activision's game data and GPL FFmpeg builds. It is for pers
 
 **Found in passing:** the `savegame <n>` console command crashes the dev build (a call through a null pointer, from `0x1041cab1`). The game's own autosaves are unaffected.
 
+
+## 18. Anti-aliasing (2026-10-31)
+4x MSAA by default; `SHARK_MSAA=<n>` picks the samples per pixel, and `0` turns it off. The count steps down to one the GPU supports.
+
+- Drawing goes to a multisampled colour target (`G.ms_color`) and depth target. A frame has many passes because every Clear restarts one, so samples are stored for the next pass to load, not memoryless.
+- Each pass resolves into `G.color`, which stays single-sample for Present, frame dumps and back-buffer reads.
+- `gfx_backbuffer_write` must also draw into `G.ms_color`, or the next pass's resolve would overwrite what the CPU wrote. That copy forces alpha to 1.
+- Alpha-tested edges keep their hard outline: MSAA only smooths geometry edges, and `discard_fragment` drops the whole pixel.
+
+**Verified [C]**, headless, uncapped, 1024x768, Apple M5, New Game → LowerCity: real-time gameplay runs at about **168 fps with 4x, 205 fps without** (about 18% slower). The level, HUD and news-broadcast scenes render correctly in frame dumps; no pipeline errors.
+
+**Not verified:** the windowed app by eye; `gfx_backbuffer_write`'s copy on its own (no run was shown to reach it).
+
+**Benchmark trap:** `tools/bench.sh` uses the Dev save folder. If slot 1 has a save, the script stops at "overwrite this game?" and measures the menu. Pass an empty `SHARK_USER_DIR`. It also ends during the intro cutscene when frame rates are lower, so a 340 s run is needed to measure gameplay.

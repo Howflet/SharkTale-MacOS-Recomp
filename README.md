@@ -174,6 +174,7 @@ These are environment variables; details are in `SHARKTALE_NOTES.md`.
 | `SHARK_HEADLESS=1` | No window (offscreen rendering) |
 | `SHARK_MUTE=1` | Silence audio |
 | `SHARK_WINDOWED=1` | Start in a window |
+| `SHARK_MSAA=<n>` | Anti-aliasing samples per pixel (default 4; `0` turns it off) |
 | `SHARK_DUMP=<dir>`, `SHARK_DUMP_EVERY=<n>` | Save every n-th frame as a PNG |
 | `SHARK_SCRIPT="<frame>:<action>,…"` | Scripted input: `k<dik>` key, `c<x>/<y>` click, `m<x>/<y>` move, `t` trace draws, `p` screenshot, `x<cmd>` console command, `q` quit |
 | `SHARK_TRACE_HLE=1` | Log every Windows API call |
