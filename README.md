@@ -73,8 +73,11 @@ WindowedViewportY=1200
 FullscreenViewportX=1600
 FullscreenViewportY=1200
 StartupFullscreen=True
+
+[D3DDrv.D3DRenderDevice]
+LevelOfAnisotropy=16
 ```
-The resolution is optional (the original is 800×600). The file uses Windows line endings, so keep them.
+The resolution is optional (the original is 800×600), and `LevelOfAnisotropy` sharpens floors and walls seen at an angle (1 turns it off). The file uses Windows line endings, so keep them.
 
 ---
 

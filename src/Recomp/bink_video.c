@@ -211,6 +211,20 @@ void bink_video_copy_bgra(BinkVideo* v, uint8_t* dest, uint32_t pitch, uint32_t 
 	}
 }
 
+int bink_video_planes(BinkVideo* v, const uint8_t* planes[3], int pitches[3], int* width, int* height)
+{
+	if (!v || !v->have_frame)
+		return 0;
+	for (int p = 0; p < 3; p++)
+	{
+		planes[p] = v->frame->data[p];
+		pitches[p] = v->frame->linesize[p];
+	}
+	*width = v->frame->width;
+	*height = v->frame->height;
+	return 1;
+}
+
 void bink_video_copy_scaled_bgra(BinkVideo* v, uint8_t* dest, uint32_t pitch, uint32_t dest_w, uint32_t dest_h, float scale)
 {
 	if (!v || !v->have_frame)

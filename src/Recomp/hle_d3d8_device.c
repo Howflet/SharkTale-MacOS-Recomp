@@ -136,6 +136,7 @@ static struct Device
 	u32 palette[256][256];
 	u32 cur_palette;
 	u32 backbuffer, depthbuffer, rendertarget, zstencil;
+	int movie_showing;  /* movie frames are going straight to the GPU: skip back-buffer readbacks */
 	u32 shader_handles;
 	VShader vs[512];
 	int in_scene;
@@ -676,8 +677,10 @@ HLE(S_LockRect)
 	}
 	if (s->guest == D.backbuffer && !(ARG(3) & 0x10))  /* not D3DLOCK_READONLY: real CPU access */
 	{
-		gfx_backbuffer_read(GP(s->mem), (int)s->pitch);
-		s->synced = 1;
+		/* synced 2: a movie frame will be drawn on the GPU, so the CPU copy is not needed. */
+		s->synced = D.movie_showing ? 2 : 1;
+		if (!D.movie_showing)
+			gfx_backbuffer_read(GP(s->mem), (int)s->pitch);
 	}
 	u32 base = s->mem;
 	if (ARG(2))
@@ -691,11 +694,9 @@ HLE(S_UnlockRect)
 	Surface* s = surf_of(COM_THIS);
 	if (s->tex)
 		unlock_level(s->tex, s->face, s->level);
-	if (s->synced)
-	{
+	if (s->synced == 1)
 		gfx_backbuffer_write(GP(s->mem), (int)s->pitch);
-		s->synced = 0;
-	}
+	s->synced = 0;
 	HLE_RET(c, S_OK, 4);
 }
 
@@ -1322,6 +1323,17 @@ static const ComMethod DeviceMethods[] = {
 _Static_assert(sizeof DeviceMethods / sizeof DeviceMethods[0] == 97, "IDirect3DDevice8 has 97 methods");
 
 void d3d8_backbuffer_size(u32* w, u32* h) { *w = D.width; *h = D.height; }
+
+/* If dest is the locked back buffer, the unlock will upload nothing and the caller draws instead. */
+int d3d8_movie_replaces_lock(u32 dest)
+{
+	Surface* s = surf_of(D.backbuffer);
+	if (!s || !s->synced || s->mem != dest)
+		return 0;
+	s->synced = 0;
+	return 1;
+}
+void d3d8_movie_showing(int on) { D.movie_showing = on; }
 
 u32 d3d8_create_device(Ctx* c, u32 hwnd, u32 behavior, u32 pp, u32 out_device)
 {

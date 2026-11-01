@@ -382,3 +382,31 @@ fragment float4 blit_fs(BlitOut in [[stage_in]], texture2d<float> t [[texture(0)
 	constexpr sampler s(filter::linear, address::clamp_to_edge);
 	return float4(t.sample(s, in.uv).rgb, 1);
 }
+
+/* Bink movies, YUV 4:2:0 (BT.601, limited range) as three planes: Catmull-Rom on
+   luma, where the detail is, and bilinear on chroma. */
+static float4 catmull_rom(float t)
+{
+	float t2 = t * t, t3 = t2 * t;
+	return 0.5 * float4(-t3 + 2 * t2 - t, 3 * t3 - 5 * t2 + 2, -3 * t3 + 4 * t2 + t, t3 - t2);
+}
+fragment float4 movie_fs(BlitOut in [[stage_in]], texture2d<float> py [[texture(0)]],
+	texture2d<float> pu [[texture(1)]], texture2d<float> pv [[texture(2)]])
+{
+	constexpr sampler s(filter::linear, address::clamp_to_edge);
+	int2 size = int2(py.get_width(), py.get_height());
+	float2 p = in.uv * float2(size) - 0.5;
+	float2 cell = floor(p);
+	float4 wx = catmull_rom(p.x - cell.x), wy = catmull_rom(p.y - cell.y);
+	float luma = 0;
+	for (int j = 0; j < 4; j++)
+		for (int i = 0; i < 4; i++)
+		{
+			int2 at = clamp(int2(cell) + int2(i - 1, j - 1), int2(0), size - 1);
+			luma += py.read(uint2(at)).r * wx[i] * wy[j];
+		}
+	float y = 1.1641 * (luma - 16.0 / 255.0);
+	float u = pu.sample(s, in.uv).r - 128.0 / 255.0;
+	float v = pv.sample(s, in.uv).r - 128.0 / 255.0;
+	return float4(saturate(float3(y + 1.5977 * v, y - 0.3906 * u - 0.8125 * v, y + 2.0156 * u)), 1);
+}

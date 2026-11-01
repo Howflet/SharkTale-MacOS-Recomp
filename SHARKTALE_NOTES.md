@@ -740,3 +740,15 @@ The bundle contains Activision's game data and GPL FFmpeg builds. It is for pers
 **Not verified:** the windowed app by eye; `gfx_backbuffer_write`'s copy on its own (no run was shown to reach it).
 
 **Benchmark trap:** `tools/bench.sh` uses the Dev save folder. If slot 1 has a save, the script stops at "overwrite this game?" and measures the menu. Pass an empty `SHARK_USER_DIR`. It also ends during the intro cutscene when frame rates are lower, so a 340 s run is needed to measure gameplay.
+
+## 19. Anisotropic filtering and GPU movie scaling (2026-10-31)
+**Anisotropic filtering:** `LevelOfAnisotropy=16` in `[D3DDrv.D3DRenderDevice]`. No code change: D3DDrv's sampler setup already sets MAG/MIN to `D3DTEXF_ANISOTROPIC` and passes the level as `MAXANISOTROPY` when it is above 1, and `sampler_for` already maps that to Metal. The setting lives in the untracked `game/System/Game.ini` and in the player's `Game.ini`, so the README lists it. `game/System/Default.ini` stays at 1.
+
+**Movies:** when `BinkCopyToBuffer` scales and its destination is the locked back buffer, the decoded Y, U and V planes go to R8 textures and `movie_fs` draws them into the frame (`gfx_movie_draw`). Luma is Catmull-Rom, chroma bilinear; the CPU path was bilinear on luma and nearest on chroma.
+- `gfx_movie_draw` draws in the normal frame pass, so MSAA resolves it and anything the engine draws afterwards lands on top. The plane textures are per ring slot, because the GPU may still be reading the previous frame's.
+- The first frame still costs a readback, because the lock comes before the Bink call. After that `D.movie_showing` makes back-buffer locks skip the readback (`synced` 2) and their unlocks skip the upload, until `BinkClose`. A CPU write to the back buffer during a movie would be lost; none was seen.
+- Other destinations (a texture lock) and scales up to 1.25 keep the CPU copies.
+
+**Verified [C]**, headless, 1024x768, Apple M5: over 1,000 frames of intro movies, user CPU time fell from 14.5 s to 7.4 s. All movie frames took the GPU path. New Game through to the news broadcast ran with every sampler at mag 3, min 3, mip 2, 16x; gameplay frames render correctly.
+
+**Not verified:** the windowed app by eye, and the sharpness or gameplay cost of anisotropy (no level-1 comparison was run).

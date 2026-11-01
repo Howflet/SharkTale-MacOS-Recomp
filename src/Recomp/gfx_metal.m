@@ -64,7 +64,8 @@ static struct
 	id<MTLCommandQueue> queue;
 	id<MTLLibrary> lib;
 	id<MTLFunction> vs, fs;
-	id<MTLRenderPipelineState> blit, blit_ms;
+	id<MTLRenderPipelineState> blit, blit_ms, movie;
+	id<MTLTexture> movie_planes[RING_COUNT][3];  /* per ring slot: the GPU may still read the last frame's */
 	NSMutableDictionary* pipelines;
 	NSMutableDictionary* depth_states;
 	NSMutableDictionary* samplers;
@@ -566,6 +567,10 @@ int gfx_init(int width, int height, int fullscreen)
 		G.samples = pick_samples();
 		bd.rasterSampleCount = (NSUInteger)G.samples;
 		G.blit_ms = [G.dev newRenderPipelineStateWithDescriptor:bd error:&err];
+		bd.fragmentFunction = [G.lib newFunctionWithName:@"movie_fs"];
+		bd.depthAttachmentPixelFormat = MTLPixelFormatDepth32Float_Stencil8;
+		bd.stencilAttachmentPixelFormat = MTLPixelFormatDepth32Float_Stencil8;
+		G.movie = [G.dev newRenderPipelineStateWithDescriptor:bd error:&err];
 		G.pipelines = [NSMutableDictionary new];
 		G.depth_states = [NSMutableDictionary new];
 		G.samplers = [NSMutableDictionary new];
@@ -849,6 +854,35 @@ void gfx_backbuffer_write(const void* src, int pitch)
 			[e drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:3];
 			[e endEncoding];
 		}
+	}
+}
+
+void gfx_movie_draw(const uint8_t* const planes[3], const int pitches[3], int width, int height, int x, int y, int w, int h)
+{
+	if (!G.ok)
+		return;
+	@autoreleasepool
+	{
+		gfx_clear(1, 0xff000000u, 0, 0, NULL, 0);
+		begin_pass();
+		for (int p = 0; p < 3; p++)
+		{
+			NSUInteger pw = (NSUInteger)(p ? (width + 1) / 2 : width), ph = (NSUInteger)(p ? (height + 1) / 2 : height);
+			id<MTLTexture> t = G.movie_planes[G.ring_index][p];
+			if (!t || t.width != pw || t.height != ph)
+			{
+				t = [G.dev newTextureWithDescriptor:[MTLTextureDescriptor texture2DDescriptorWithPixelFormat:MTLPixelFormatR8Unorm
+					width:pw height:ph mipmapped:NO]];
+				G.movie_planes[G.ring_index][p] = t;
+			}
+			[t replaceRegion:MTLRegionMake2D(0, 0, pw, ph) mipmapLevel:0 withBytes:planes[p] bytesPerRow:(NSUInteger)pitches[p]];
+			[G.enc setFragmentTexture:t atIndex:(NSUInteger)p];
+		}
+		[G.enc setRenderPipelineState:G.movie];
+		[G.enc setViewport:(MTLViewport){ x, y, w, h, 0, 1 }];
+		[G.enc drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:3];
+		end_pass();
+		G.draws++;
 	}
 }
 

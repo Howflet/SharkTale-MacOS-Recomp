@@ -73,5 +73,9 @@ void gfx_draw(const GfxState* s, int prim, int vertex_count, const void* const* 
 void gfx_backbuffer_read(void* dst, int pitch);
 void gfx_backbuffer_write(const void* src, int pitch);
 
+/* Show a YUV 4:2:0 movie frame (Y, U, V planes) scaled into the rectangle x, y, w, h of a
+   black back buffer. */
+void gfx_movie_draw(const uint8_t* const planes[3], const int pitches[3], int width, int height, int x, int y, int w, int h);
+
 /* Debug: save the next presented frame to a PNG. */
 void gfx_dump_next_frame(const char* path);

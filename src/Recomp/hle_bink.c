@@ -19,10 +19,15 @@
 
 #include "bink.h"
 #include "bink_video.h"
+#include "gfx.h"
 #include "hle.h"
 
 #define BINK_SIZE 0x200
 #define TRACK_SIZE 0x20
+
+extern void d3d8_backbuffer_size(u32* w, u32* h);
+extern int d3d8_movie_replaces_lock(u32 dest);
+extern void d3d8_movie_showing(int on);
 
 typedef struct Open { u32 guest; BinkFile* file; BinkVideo* video; } Open;
 static Open Opens[256];
@@ -100,6 +105,8 @@ HLE(BinkClose)
 	for (int i = 0; i < 256; i++)
 		if (Opens[i].guest == b && b)
 		{
+			if (Opens[i].video)
+				d3d8_movie_showing(0);
 			bink_video_close(Opens[i].video);
 			bink_close(Opens[i].file);
 			Opens[i].video = NULL;
@@ -185,7 +192,6 @@ HLE(BinkCopyToBuffer)
 		if ((ARG(6) & 0xf) != 5 && (ARG(6) & 0xf) != 3)
 			fprintf(stderr, "[bink] CopyToBuffer surface type %u treated as BGRA\n", ARG(6) & 0xf);
 		/* The height argument is the movie's; the destination is the whole back buffer. */
-		extern void d3d8_backbuffer_size(u32* w, u32* h);
 		u32 dest_w, dest_h;
 		d3d8_backbuffer_size(&dest_w, &dest_h);
 		if (dest_w != ARG(2) / 4)
@@ -195,7 +201,18 @@ HLE(BinkCopyToBuffer)
 		{
 			/* The movies are authored for 800x600: at higher resolutions scale them up as the game
 			   would have shown them full-screen, instead of a small centred picture. */
-			bink_video_copy_scaled_bgra(o->video, GP(ARG(1)), ARG(2), dest_w, dest_h, scale);
+			const uint8_t* planes[3];
+			int pitches[3], sw, sh;
+			if (bink_video_planes(o->video, planes, pitches, &sw, &sh) && d3d8_movie_replaces_lock(ARG(1)))
+			{
+				int w = (int)((float)sw * scale), h = (int)((float)sh * scale);
+				if (w > (int)dest_w) w = (int)dest_w;
+				if (h > (int)dest_h) h = (int)dest_h;
+				gfx_movie_draw(planes, pitches, sw, sh, ((int)dest_w - w) / 2, ((int)dest_h - h) / 2, w, h);
+				d3d8_movie_showing(1);
+			}
+			else
+				bink_video_copy_scaled_bgra(o->video, GP(ARG(1)), ARG(2), dest_w, dest_h, scale);
 		}
 		else
 		{
